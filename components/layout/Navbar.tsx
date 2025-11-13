@@ -74,7 +74,6 @@ const LogoLink = styled(Link)`
 
 const NavMenu = styled(Flex)`
     flex-direction: row;
-    width: 345px;
     height: 54px;
     align-items: center;
     padding: 9px 5px;
