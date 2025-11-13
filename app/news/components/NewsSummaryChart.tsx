@@ -1,5 +1,6 @@
 'use client';
 
+import {useMarketTrend} from "@/hooks/useMarketTrend";
 import styled from "styled-components";
 import Flex from "@/components/common/Flex";
 import Text from "@/components/common/Text";
@@ -14,12 +15,6 @@ interface WordMentionData {
     count: number;
 }
 
-interface ChartBarData {
-    label: string;
-    count: number;
-    height: number;
-    bgColor: string;
-}
 
 const summaryCard: SummaryCardData = {
     date: "2025년 5월 22일",
@@ -34,16 +29,26 @@ const wordMentions: WordMentionData[] = [
     {label: "미완료 2", count: 2},
 ];
 
-const chartBars: ChartBarData[] = [
-    {label: "프라이버시", count: 1, height: 54, bgColor: "#b3beff"},
-    {label: "프라이버시", count: 1, height: 54, bgColor: "#b3beff"},
-    {label: "공정성", count: 1, height: 54, bgColor: "#8e9fff"},
-    {label: "투명성", count: 2, height: 90, bgColor: "#667bff"},
-    {label: "책임성", count: 3, height: 130, bgColor: "#4861ff"},
-];
-
+const barColors = ["#b3beff", "#8e9fff", "#667bff", "#4861ff", "#7f8cff"];
 
 export default function NewsSummaryChart() {
+
+    const {data, isLoading, isError} = useMarketTrend();
+
+    if (isLoading) return <Flex center><Text color="#fff">분석 중...</Text></Flex>;
+    if (isError) return <Flex center><Text color="#f00">분석 실패</Text></Flex>;
+    if (!data) return null;
+
+    const maxBarHeight = 100;
+    const maxIssueCount = Math.max(...data.industries.map(ind => ind.issueCount));
+
+    const bars = data.industries.map((ind, i) => {
+        const height = (ind.issueCount / maxIssueCount) * maxBarHeight;
+        const bgColor = barColors[i] || "#7f8cff";
+        return {...ind, height, bgColor};
+    });
+
+
     return (
         <NewsSummaryChartWrapper gap={41} center>
             <Flex spaceBetween flexStart>
@@ -69,7 +74,7 @@ export default function NewsSummaryChart() {
                             <Text fontSize={11} fontWeight={500} color={"#919191"}>{summaryCard.date}</Text>
                         </Flex>
                         <Divider/>
-                        <Text fontSize={15} fontWeight={400} color={"#FFFFFF"}>{summaryCard.content}</Text>
+                        <Text fontSize={15} fontWeight={400} color={"#FFFFFF"}>{data.trendSummary}</Text>
                     </CardInner>
                 </ResultCard>
 
@@ -185,36 +190,35 @@ export default function NewsSummaryChart() {
                             fontWeight={600}
                             color="white"
                         >
-                            현재 일어나고 있는 순위
+                            주목되고 있는 산업군
                         </Text>
+                        <ChartBarsWrapper row gap={20} center>
+                            {bars.map((bar, i) => (
+                                <Flex key={i} width={78} center>
 
-                        <ChartBarsWrapper row gap={20}>
-                            {chartBars.map((bar, index) => (
-                                <Flex width={78} key={index}>
-                                    <Flex center gap={11}>
+                                    <BarWrapper>
                                         <Bar height={bar.height} bgColor={bar.bgColor} />
-
-                                        <Text
-                                            fontSize={14}
-                                            color="#cccccc"
-                                            center
-                                        >
-                                            {bar.label}
-                                        </Text>
                                         <CountLabel
                                             fontSize={12}
                                             fontWeight={700}
-                                            color={bar.height >= 90 ? 'white' : '#252736'}
-                                            isLight={bar.height >= 90}
+                                            color={bar.height >= 90 ? "white" : "#252736"}
                                         >
-                                            {bar.count}건
+                                            {bar.issueCount}건
                                         </CountLabel>
-                                    </Flex>
+                                    </BarWrapper>
 
-
+                                    <Text
+                                        fontSize={14}
+                                        color="#cccccc"
+                                        center
+                                        style={{ marginTop: 8, textAlign: "center", wordBreak: "break-word" }}
+                                    >
+                                        {bar.industry}
+                                    </Text>
                                 </Flex>
                             ))}
                         </ChartBarsWrapper>
+
                     </ChartContainer>
                 </ChartArticle>
             </CardWrapper>
@@ -276,23 +280,30 @@ const ChartContainer = styled(Flex)`
     background-color: #1d1b25;
     border-radius: 10px;
 `;
-
 const ChartBarsWrapper = styled(Flex)`
     height: 180px;
     width: 100%;
-    align-items: end;
+    align-items: flex-end; // 막대 아래 정렬
+`;
+
+const BarWrapper = styled.div`
+    position: relative;
+    width: 100%;
 `;
 
 const Bar = styled.div<{ height: number; bgColor: string }>`
-    position: relative;
     width: 100%;
-    height: ${props => props.height}px;
-    background-color: ${props => props.bgColor};
+    height: ${(props) => props.height}px;
+    background-color: ${(props) => props.bgColor};
     border-radius: 10px;
 `;
 
-const CountLabel = styled(Text)<{ isLight: boolean }>`
+const CountLabel = styled(Text)`
     position: absolute;
-    bottom: 80px;
-    z-index: 2;
+    bottom: 5px;
+    width: 100%;
+    text-align: center;
+    color: white;
+    font-weight: 700;
+    font-size: 12px;
 `;
