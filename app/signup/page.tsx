@@ -7,9 +7,9 @@ import {signup} from '@/lib/api/auth';
 import {setTokens} from '@/lib/utils/auth';
 import type {SignupRequest} from '@/lib/types/auth';
 import styled from "styled-components";
-import Flex from "@/components/Flex";
-import Text from "@/components/Text";
-import ZoomedWrapper from "@/components/ZoomWrapper";
+import Flex from "@/components/common/Flex";
+import Text from "@/components/common/Text";
+import ZoomedWrapper from "@/components/common/ZoomWrapper";
 import useWindowSize from "@/hooks/useWindowSize";
 
 export default function SignupPage() {

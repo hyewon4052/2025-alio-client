@@ -1,12 +1,12 @@
 'use client';
 
-import ZoomWrapper from "@/components/ZoomWrapper";
+import ZoomWrapper from "@/components/common/ZoomWrapper";
 import useWindowSize from "@/hooks/useWindowSize";
 import UserAside from "./components/UserAside";
 import NewsSummaryChart from "./components/NewsSummaryChart";
 import NewsFeed from "./components/NewsFeed";
 import styled from "styled-components";
-import Flex from "@/components/Flex";
+import Flex from "@/components/common/Flex";
 
 export default function NewsPage() {
     const {width, height} = useWindowSize();

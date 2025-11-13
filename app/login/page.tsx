@@ -4,12 +4,12 @@ import {useState} from 'react';
 import {useRouter} from 'next/navigation';
 import Link from 'next/link';
 import styled from 'styled-components';
-import Flex from '@/components/Flex';
-import Text from '@/components/Text';
+import Flex from '@/components/common/Flex';
+import Text from '@/components/common/Text';
 import {login} from '@/lib/api/auth';
 import {setTokens} from '@/lib/utils/auth';
 import type {LoginRequest} from '@/lib/types/auth';
-import ZoomedWrapper from "@/components/ZoomWrapper";
+import ZoomedWrapper from "@/components/common/ZoomWrapper";
 import useWindowSize from "@/hooks/useWindowSize";
 
 export default function LoginPage() {

@@ -1,8 +1,8 @@
 'use client';
 
 import styled from "styled-components";
-import Flex from "@/components/Flex";
-import Text from "@/components/Text";
+import Flex from "@/components/common/Flex";
+import Text from "@/components/common/Text";
 
 interface UserActivityData {
     id: string;
