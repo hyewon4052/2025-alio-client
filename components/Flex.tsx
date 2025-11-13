@@ -1,4 +1,4 @@
-import styled, {css} from "styled-components";
+import styled, { css } from "styled-components";
 
 export interface FlexProps {
     inline?: boolean;
@@ -23,7 +23,31 @@ export interface FlexProps {
     reverse?: boolean;
 }
 
-const Flex = styled.div<FlexProps>`
+const Flex = styled.div.withConfig({
+    shouldForwardProp: (prop) =>
+        ![
+            'inline',
+            'row',
+            'gap',
+            'flexWrap',
+            'spaceBetween',
+            'spaceAround',
+            'spaceEvenly',
+            'verticalCenter',
+            'verticalTop',
+            'verticalBottom',
+            'horizontalCenter',
+            'center',
+            'width',
+            'height',
+            'flex',
+            'spaced',
+            'flexStart',
+            'flexEnd',
+            'flexShrink',
+            'reverse'
+        ].includes(prop),
+})<FlexProps>`
     ${({inline}) => `display: ${inline ? 'inline-flex' : 'flex'};`};
     ${({row, reverse}) => `flex-direction: ${row ? 'row' : 'column'}${reverse ? "-reverse" : ""};`};
     ${({flexWrap}) => flexWrap ? `flex-wrap: wrap;` : ''}
@@ -32,21 +56,27 @@ const Flex = styled.div<FlexProps>`
     ${({spaceAround}) => spaceAround ? `justify-content: space-around;` : ''}
     ${({spaceEvenly}) => spaceEvenly ? `justify-content: space-evenly;` : ''}
     ${({row, verticalCenter, horizontalCenter, verticalTop, verticalBottom}) => {
-    if (row) return (verticalCenter
-            ? `align-items: center;`
-            : verticalTop
-                ? 'align-items: flex-start;'
-                : verticalBottom
-                    ? 'align-items: flex-end;'
-                    : '')
-        + (horizontalCenter ? `justify-content: center;` : '');
-    return (horizontalCenter ? `align-items: center;` : '')
-        + (verticalCenter
-            ? `justify-content: center;`
-            : verticalBottom
-                ? 'justify-content: flex-end;'
-                : '');
-}}
+        if (row) {
+            return (
+                    (verticalCenter
+                            ? `align-items: center;`
+                            : verticalTop
+                                    ? 'align-items: flex-start;'
+                                    : verticalBottom
+                                            ? 'align-items: flex-end;'
+                                            : '') +
+                    (horizontalCenter ? `justify-content: center;` : '')
+            );
+        }
+        return (
+                (horizontalCenter ? `align-items: center;` : '') +
+                (verticalCenter
+                        ? `justify-content: center;`
+                        : verticalBottom
+                                ? 'justify-content: flex-end;'
+                                : '')
+        );
+    }}
     ${({center}) => center ? `align-items: center; justify-content: center;` : ''}
     ${({flexStart, row}) => flexStart ? (row ? `justify-content: flex-start;` : `align-items: flex-start;`) : ''}
     ${({flexEnd, row}) => flexEnd ? (row ? `justify-content: flex-end;` : `align-items: flex-end;`) : ''}
