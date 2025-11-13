@@ -1,8 +1,8 @@
 'use client';
 
 import styled from "styled-components";
-import Flex from "@/components/Flex";
-import Text from "@/components/Text";
+import Flex from "@/components/common/Flex";
+import Text from "@/components/common/Text";
 import Link from 'next/link';
 import {usePathname, useRouter} from 'next/navigation';
 
@@ -17,7 +17,7 @@ export default function Navbar() {
     return (
         <NavbarContainer>
             <NavbarWrapper>
-                <LogoLink href="/">
+                <LogoLink href="/public">
                     <Text color="#6F00FF" fontSize={24} fontWeight={600}>
                         ailo
                     </Text>
