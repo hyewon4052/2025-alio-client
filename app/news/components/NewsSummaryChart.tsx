@@ -33,13 +33,11 @@ export default function NewsSummaryChart() {
     const pieData = top4.map((k) => ({name: k.keyword, value: k.frequency}));
 
     return (
-        <NewsSummaryChartWrapper gap={41} center>
-            <Flex spaceBetween flexStart>
-                <Flex gap={30} center row>
-                    <Text fontSize={28} fontWeight={600} color={"#FFFFFF"}>
-                        주요 뉴스 요약 차트
-                    </Text>
-                </Flex>
+        <NewsSummaryChartWrapper gap={35} flexStart>
+            <Flex>
+                <Text fontSize={28} fontWeight={600} color={"#FFFFFF"}>
+                    주요 뉴스 요약 차트
+                </Text>
             </Flex>
             <CardWrapper center gap={20} row>
                 <ResultCard center flexStart>
@@ -116,7 +114,7 @@ export default function NewsSummaryChart() {
                             주목되고 있는 산업군
                         </Text>
                         <ChartBarsWrapper row gap={20} center>
-                            {bars.map((bar, i) => (
+                            {bars.slice(0, 5).map((bar, i) => (
                                 <>
                                     <Flex key={i} width={78} center>
                                         <BarWrapper flexEnd>
@@ -156,7 +154,6 @@ export default function NewsSummaryChart() {
 }
 
 const NewsSummaryChartWrapper = styled(Flex)`
-    height: 411px;
     padding: 25px 31px;
     border-radius: 18px;
     border: 1px solid rgba(155, 155, 155, 0.30);
