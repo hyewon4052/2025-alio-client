@@ -17,7 +17,7 @@ export default function Navbar() {
     return (
         <NavbarContainer>
             <NavbarWrapper>
-                <LogoLink href="/public">
+                <LogoLink href="/home">
                     <Text color="#6F00FF" fontSize={24} fontWeight={600}>
                         ailo
                     </Text>
@@ -29,9 +29,9 @@ export default function Navbar() {
                             Home
                         </Text>
                     </NavItem>
-                    <NavItem $active={false}>
+                    <NavItem $active={false} onClick={() => router.push("/community")}>
                         <NavLink href="#">
-                            <Text color="#FFFFFF" fontSize={15} fontWeight={700}>
+                            <Text color="#FFFFFF" fontSize={15} fontWeight={700} >
                                 커뮤니티
                             </Text>
                         </NavLink>
