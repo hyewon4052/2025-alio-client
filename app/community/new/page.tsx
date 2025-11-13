@@ -82,9 +82,13 @@ export default function CommunityCreatePage() {
         country,
       });
       router.replace(`/community/${response.id}`);
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      setError('후기를 저장하는 중 문제가 발생했습니다. 다시 시도해주세요.');
+      if (err?.response?.status === 401) {
+        router.push('/login');
+      } else {
+        setError('후기를 저장하는 중 문제가 발생했습니다. 다시 시도해주세요.');
+      }
     } finally {
       setLoading(false);
     }

@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import styled from "styled-components";
 import Flex from "@/components/common/Flex";
 import Text from "@/components/common/Text";
@@ -8,6 +9,7 @@ import { createNewsComment, getRecentNewsComments } from '@/lib/api/news';
 import { NewsComment } from '@/lib/types/news';
 
 export default function UserAside() {
+    const router = useRouter();
     const [comments, setComments] = useState<NewsComment[]>([]);
     const [newComment, setNewComment] = useState('');
     const [loading, setLoading] = useState(false);
@@ -22,8 +24,11 @@ export default function UserAside() {
             setLoading(true);
             const data = await getRecentNewsComments(3);
             setComments(data);
-        } catch (error) {
+        } catch (error: any) {
             console.error('Failed to fetch comments', error);
+            if (error?.response?.status === 401) {
+                router.push('/login');
+            }
         } finally {
             setLoading(false);
         }
@@ -38,8 +43,11 @@ export default function UserAside() {
             await createNewsComment({ content: newComment.trim() });
             setNewComment('');
             await fetchComments();
-        } catch (error) {
+        } catch (error: any) {
             console.error('Failed to create comment', error);
+            if (error?.response?.status === 401) {
+                router.push('/login');
+            }
         } finally {
             setSubmitting(false);
         }
