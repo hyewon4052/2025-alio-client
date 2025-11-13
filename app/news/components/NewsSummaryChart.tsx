@@ -1,34 +1,14 @@
 'use client';
 
 import {useMarketTrend} from "@/hooks/useMarketTrend";
+import {PieChart, Pie, Cell} from "recharts";
 import styled from "styled-components";
 import Flex from "@/components/common/Flex";
 import Text from "@/components/common/Text";
 
-interface SummaryCardData {
-    date: string;
-    content: string;
-}
-
-interface WordMentionData {
-    label: string;
-    count: number;
-}
-
-
-const summaryCard: SummaryCardData = {
-    date: "2025년 5월 22일",
-    content:
-        "급여 조건 - 비정상적 현지 리테일 포지션\n대비 월 250만~300만원은 과도하게 높음. \n\n통상 임금보다 약 2~3배 수준.",
-};
-
-const wordMentions: WordMentionData[] = [
-    {label: "검진 1", count: 1},
-    {label: "개선 3", count: 3},
-    {label: "수정 중 4", count: 4},
-    {label: "미완료 2", count: 2},
-];
-
+const today = new Date();
+const formattedDate = `${today.getFullYear()}년 ${today.getMonth() + 1}월 ${today.getDate()}일`;
+const COLORS = ["#b3beff", "#8e9fff", "#667bff", "#4861ff"];
 const barColors = ["#b3beff", "#8e9fff", "#667bff", "#4861ff", "#7f8cff"];
 
 export default function NewsSummaryChart() {
@@ -47,7 +27,10 @@ export default function NewsSummaryChart() {
         const bgColor = barColors[i] || "#7f8cff";
         return {...ind, height, bgColor};
     });
+    const top4 = data.keywords.slice(0, 4);
+    const top1 = top4[0];
 
+    const pieData = top4.map((k) => ({name: k.keyword, value: k.frequency}));
 
     return (
         <NewsSummaryChartWrapper gap={41} center>
@@ -56,14 +39,6 @@ export default function NewsSummaryChart() {
                     <Text fontSize={28} fontWeight={600} color={"#FFFFFF"}>
                         주요 뉴스 요약 차트
                     </Text>
-                    <Flex gap={7} center row>
-                        <Text fontSize={16} fontWeight={500} color={"#B1B1B1"}>
-                            차트 출처 뉴스
-                        </Text>
-                        <NumberBox center>
-                            <Text fontSize={12} fontWeight={600} color={"#FFFFFF"}>7</Text>
-                        </NumberBox>
-                    </Flex>
                 </Flex>
             </Flex>
             <CardWrapper center gap={20} row>
@@ -71,117 +46,65 @@ export default function NewsSummaryChart() {
                     <CardInner>
                         <Flex gap={10} center flexStart>
                             <Text fontSize={20} fontWeight={500} color={"#FFFFFF"}>결과 요약</Text>
-                            <Text fontSize={11} fontWeight={500} color={"#919191"}>{summaryCard.date}</Text>
+                            <Text fontSize={11} fontWeight={500} color={"#919191"}>{formattedDate}</Text>
                         </Flex>
                         <Divider/>
                         <Text fontSize={15} fontWeight={400} color={"#FFFFFF"}>{data.trendSummary}</Text>
                     </CardInner>
                 </ResultCard>
 
-                <article className="relative w-[362px] h-[280px] bg-[#1d1b25] rounded-[10px]">
-                    <div className="flex flex-col w-24 items-start gap-[46px] absolute top-9 left-7">
-                        <h3 className="relative flex items-center justify-center w-fit mt-[-1.00px] mr-[-6.00px] [font-family:'Pretendard-SemiBold',Helvetica] font-semibold text-white text-base tracking-[-0.32px] leading-[21.3px] whitespace-nowrap">
-                            많이 언급된 단어
-                        </h3>
-
-                        <div className="inline-flex h-[111px] items-start gap-3.5 relative">
-                            <img
-                                className="relative w-[3px] h-[94.9px]"
-                                alt=""
-                                src="https://c.animaapp.com/Io1OIwTU/img/line-215.svg"
-                                role="presentation"
-                            />
-
-                            <ul className="flex flex-col w-[62px] h-[73px] items-start gap-[11px] relative">
-                                {wordMentions.map((mention, index) => (
-                                    <li
-                                        key={index}
-                                        className="relative flex items-center justify-center self-stretch [font-family:'Pretendard-Regular',Helvetica] font-normal text-[#b1b1b1] text-[13px] tracking-[-0.26px] leading-[17.3px]"
-                                    >
-                                        {mention.label}
-                                    </li>
+                <ChartWrapper center>
+                    <Flex gap={10}>
+                        <Text fontSize={16} fontWeight={600}>많이 언급된 단어</Text>
+                        <Flex row gap={40}>
+                            <Flex gap={11}>
+                                {top4.map((k, i) => (
+                                    <Text key={i} color="#B1B1B1" fontSize={13}>
+                                        {k.keyword} {k.frequency}
+                                    </Text>
                                 ))}
-                            </ul>
-                        </div>
-                    </div>
+                            </Flex>
 
-                    <div className="absolute top-[23px] left-[101px] w-[247px] h-[243px]">
-                        <div
-                            className="absolute top-[105px] left-[87px] h-[19px] [font-family:'Pretendard-SemiBold',Helvetica] font-semibold text-white text-[14.3px] tracking-[-0.29px] leading-[19.0px] whitespace-nowrap flex items-center justify-center"
-                            role="status"
-                            aria-label="진행률"
-                        >
-                            진행률 70%
-                        </div>
+                            <div style={{position: "relative", width: 180, height: 180}}>
+                                <PieChart width={180} height={180}>
+                                    <Pie
+                                        data={pieData}
+                                        dataKey="value"
+                                        nameKey="name"
+                                        innerRadius={50}
+                                        outerRadius={80}
+                                        paddingAngle={3}
+                                    >
+                                        {pieData.map((entry, index) => (
+                                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]}/>
+                                        ))}
+                                    </Pie>
+                                </PieChart>
 
-                        <div
-                            className="absolute top-[127px] left-[90px] h-[11px] [font-family:'Pretendard-Medium',Helvetica] font-medium text-variable-collection-white-100 text-[8.6px] tracking-[-0.17px] leading-[11.4px] whitespace-nowrap flex items-center justify-center">
-                            개선률, 점검률 합계
-                        </div>
-
-                        <img
-                            className="absolute top-[67px] left-[35px] w-[66px] h-[133px]"
-                            alt=""
-                            src="https://c.animaapp.com/Io1OIwTU/img/ellipse-176.svg"
-                            role="presentation"
-                        />
-
-                        <img
-                            className="absolute top-[35px] left-[57px] w-[148px] h-[74px]"
-                            alt=""
-                            src="https://c.animaapp.com/Io1OIwTU/img/ellipse-177.svg"
-                            role="presentation"
-                        />
-
-                        <img
-                            className="absolute top-[100px] left-[149px] w-[59px] h-[94px]"
-                            alt=""
-                            src="https://c.animaapp.com/Io1OIwTU/img/ellipse-178.svg"
-                            role="presentation"
-                        />
-
-                        <img
-                            className="absolute top-[167px] left-[89px] w-[76px] h-[42px]"
-                            alt=""
-                            src="https://c.animaapp.com/Io1OIwTU/img/ellipse-179.svg"
-                            role="presentation"
-                        />
-
-                        {[
-                            {top: "33px", left: "146px", count: "4"},
-                            {top: "116px", left: "23px", count: "3"},
-                            {top: "148px", left: "193px", count: "2"},
-                            {top: "198px", left: "118px", count: "1"},
-                        ].map((badge, index) => (
-                            <div
-                                key={index}
-                                className="flex w-[23px] h-[22px] items-center gap-[5.49px] px-[3.84px] py-[3.3px] absolute backdrop-blur-[4.18px] backdrop-brightness-[100%] [-webkit-backdrop-filter:blur(4.18px)_brightness(100%)]"
-                                style={{top: badge.top, left: badge.left}}
-                            >
-                                <img
-                                    className="absolute top-0 left-0 w-[23px] h-[22px]"
-                                    alt=""
-                                    src="https://c.animaapp.com/Io1OIwTU/img/ellipse-33-3@4x.png"
-                                    role="presentation"
-                                />
-
-                                <div className="relative w-[15.51px] h-[15.51px] mr-[-0.21px] aspect-[1]">
-                      <span
-                          className={`${
-                              badge.count === "1" ? "w-[32.24%]" : "w-[45.14%]"
-                          } top-[2.67%] ${
-                              badge.count === "1"
-                                  ? "left-[34.26%]"
-                                  : "left-[27.82%]"
-                          } absolute h-[96.73%] flex items-center justify-center [font-family:'Pretendard-Medium',Helvetica] font-medium text-white text-[11px] tracking-[-0.22px] leading-[14.6px] whitespace-nowrap`}
-                      >
-                        {badge.count}
-                      </span>
-                                </div>
+                                {top1 && (
+                                    <div
+                                        style={{
+                                            position: "absolute",
+                                            top: "50%",
+                                            left: "50%",
+                                            transform: "translate(-50%, -50%)",
+                                            textAlign: "center",
+                                        }}
+                                    >
+                                        <Flex>
+                                            <Text fontSize={16} fontWeight={700} color="#fff">
+                                                {top1.keyword}
+                                            </Text>
+                                            <Text fontSize={12} color="#ccc">
+                                                검색 순위 1위
+                                            </Text>
+                                        </Flex>
+                                    </div>
+                                )}
                             </div>
-                        ))}
-                    </div>
-                </article>
+                        </Flex>
+                    </Flex>
+                </ChartWrapper>
 
                 <ChartArticle>
                     <ChartContainer gap={8} verticalCenter flexStart>
@@ -194,31 +117,37 @@ export default function NewsSummaryChart() {
                         </Text>
                         <ChartBarsWrapper row gap={20} center>
                             {bars.map((bar, i) => (
-                                <Flex key={i} width={78} center>
-
-                                    <BarWrapper>
-                                        <Bar height={bar.height} bgColor={bar.bgColor} />
-                                        <CountLabel
-                                            fontSize={12}
-                                            fontWeight={700}
-                                            color={bar.height >= 90 ? "white" : "#252736"}
-                                        >
-                                            {bar.issueCount}건
-                                        </CountLabel>
-                                    </BarWrapper>
-
-                                    <Text
-                                        fontSize={14}
-                                        color="#cccccc"
-                                        center
-                                        style={{ marginTop: 8, textAlign: "center", wordBreak: "break-word" }}
-                                    >
-                                        {bar.industry}
-                                    </Text>
-                                </Flex>
+                                <>
+                                    <Flex key={i} width={78} center>
+                                        <BarWrapper flexEnd>
+                                            <Bar height={bar.height} bgColor={bar.bgColor}/>
+                                            <CountLabel
+                                                fontSize={12}
+                                                fontWeight={700}
+                                                color={bar.height >= 90 ? "white" : "#252736"}
+                                            >
+                                                {bar.issueCount}건
+                                            </CountLabel>
+                                        </BarWrapper>
+                                        <Flex flexStart>
+                                            <Text
+                                                fontSize={14}
+                                                color="#cccccc"
+                                                center
+                                                style={{
+                                                    position: "relative",
+                                                    bottom: "-10px",
+                                                    textAlign: "center",
+                                                    wordBreak: "break-word"
+                                                }}
+                                            >
+                                                {bar.industry}
+                                            </Text>
+                                        </Flex>
+                                    </Flex>
+                                </>
                             ))}
                         </ChartBarsWrapper>
-
                     </ChartContainer>
                 </ChartArticle>
             </CardWrapper>
@@ -232,15 +161,6 @@ const NewsSummaryChartWrapper = styled(Flex)`
     border-radius: 18px;
     border: 1px solid rgba(155, 155, 155, 0.30);
     background: #22212D;
-`;
-
-const NumberBox = styled(Flex)`
-    width: 34px;
-    height: 19px;
-    padding: 3px 18px;
-    gap: 8px;
-    border-radius: 20px;
-    background: #4861FF;
 `;
 
 const ResultCard = styled(Flex)`
@@ -283,12 +203,21 @@ const ChartContainer = styled(Flex)`
 const ChartBarsWrapper = styled(Flex)`
     height: 180px;
     width: 100%;
-    align-items: flex-end; // 막대 아래 정렬
+    align-items: flex-end;
 `;
 
-const BarWrapper = styled.div`
+const BarWrapper = styled(Flex)`
     position: relative;
     width: 100%;
+`;
+
+const ChartWrapper = styled(Flex)`
+    width: 362px;
+    height: 280px;
+    padding: 11px 18px;
+    gap: 10px;
+    border-radius: 10px;
+    background: #1D1B25;
 `;
 
 const Bar = styled.div<{ height: number; bgColor: string }>`
@@ -296,6 +225,8 @@ const Bar = styled.div<{ height: number; bgColor: string }>`
     height: ${(props) => props.height}px;
     background-color: ${(props) => props.bgColor};
     border-radius: 10px;
+    position: relative;
+    bottom: 0;
 `;
 
 const CountLabel = styled(Text)`
