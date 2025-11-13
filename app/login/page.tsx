@@ -1,101 +1,185 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import {useState} from 'react';
+import {useRouter} from 'next/navigation';
 import Link from 'next/link';
-import { login } from '@/lib/api/auth';
-import { setTokens } from '@/lib/utils/auth';
-import type { LoginRequest } from '@/lib/types/auth';
+import styled from 'styled-components';
+import Flex from '@/components/common/Flex';
+import Text from '@/components/common/Text';
+import {login} from '@/lib/api/auth';
+import {setTokens} from '@/lib/utils/auth';
+import type {LoginRequest} from '@/lib/types/auth';
+import ZoomedWrapper from "@/components/common/ZoomWrapper";
+import useWindowSize from "@/hooks/useWindowSize";
 
 export default function LoginPage() {
-  const router = useRouter();
-  const [formData, setFormData] = useState<LoginRequest>({
-    username: '',
-    password: '',
-  });
-  const [error, setError] = useState<string>('');
-  const [loading, setLoading] = useState(false);
+    const {width, height} = useWindowSize();
+    const router = useRouter();
+    const [formData, setFormData] = useState<LoginRequest>({
+        username: '',
+        password: '',
+    });
+    const [error, setError] = useState<string>('');
+    const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
-    setLoading(true);
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setError('');
+        setLoading(true);
 
-    try {
-      const response = await login(formData);
-      setTokens(response.tokenResponse.accessToken, response.tokenResponse.refreshToken);
-      router.push('/');
-      router.refresh();
-    } catch (err: any) {
-      setError(err.response?.data?.message || '로그인에 실패했습니다.');
-    } finally {
-      setLoading(false);
-    }
-  };
+        try {
+            const response = await login(formData);
+            setTokens(response.tokenResponse.accessToken, response.tokenResponse.refreshToken);
+            router.push('/');
+            router.refresh();
+        } catch (err: any) {
+            setError(err.response?.data?.message || '로그인에 실패했습니다.');
+        } finally {
+            setLoading(false);
+        }
+    };
 
-  return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50">
-      <div className="w-full max-w-md space-y-8 rounded-lg bg-white p-8 shadow-md">
-        <div>
-          <h2 className="text-center text-3xl font-bold text-gray-900">로그인</h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
-            계정이 없으신가요?{' '}
-            <Link href="/signup" className="font-medium text-blue-600 hover:text-blue-500">
-              회원가입
-            </Link>
-          </p>
-        </div>
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          {error && (
-            <div className="rounded-md bg-red-50 p-4">
-              <p className="text-sm text-red-800">{error}</p>
-            </div>
-          )}
-          <div className="space-y-4">
-            <div>
-              <label htmlFor="username" className="block text-sm font-medium text-gray-700">
-                아이디
-              </label>
-              <input
-                id="username"
-                name="username"
-                type="text"
-                required
-                value={formData.username}
-                onChange={(e) => setFormData({ ...formData, username: e.target.value })}
-                className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-gray-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-blue-500"
-                placeholder="아이디를 입력하세요"
-              />
-            </div>
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                비밀번호
-              </label>
-              <input
-                id="password"
-                name="password"
-                type="password"
-                required
-                value={formData.password}
-                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-gray-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-blue-500"
-                placeholder="비밀번호를 입력하세요"
-              />
-            </div>
-          </div>
+    return (
+        <Container>
+            <ZoomedWrapper width={width} height={height}>
+                <CenterBox center>
+                    <Flex center gap={10}>
+                        <img src="/images/logo.svg" alt="" width={100}/>
+                        <Text fontSize={13} fontWeight={400}>해외취업 고민엔</Text>
+                    </Flex>
 
-          <div>
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full rounded-md bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:bg-gray-400"
-            >
-              {loading ? '로그인 중...' : '로그인'}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-  );
+                    <Form onSubmit={handleSubmit}>
+                        {error && (
+                            <ErrorBox>
+                                <Text fontSize={14} color="#991b1b">
+                                    {error}
+                                </Text>
+                            </ErrorBox>
+                        )}
+
+                        <InputGroup gap={16}>
+                            <Input
+                                id="username"
+                                name="username"
+                                type="text"
+                                required
+                                value={formData.username}
+                                onChange={(e) => setFormData({...formData, username: e.target.value})}
+                                placeholder="아이디 작성하기"
+                            />
+
+                            <Input
+                                id="password"
+                                name="password"
+                                type="password"
+                                required
+                                value={formData.password}
+                                onChange={(e) => setFormData({...formData, password: e.target.value})}
+                                placeholder="비밀번호 작성하기"
+                            />
+                        </InputGroup>
+
+                        <SignupLinkWrapper flexEnd>
+                            <StyledLink href="/signup">
+                                회원가입하기
+                            </StyledLink>
+                        </SignupLinkWrapper>
+
+                        <ButtonWrapper center>
+                            <SubmitButton type="submit" disabled={loading}>
+                                {loading ? '로그인 중...' : '로그인'}
+                            </SubmitButton>
+                        </ButtonWrapper>
+                    </Form>
+                </CenterBox>
+            </ZoomedWrapper>
+        </Container>
+    );
 }
 
+const Container = styled(Flex)`
+    width: 100%;
+    height: 100vh;
+    background-color: #1D1C25;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+`;
+
+const CenterBox = styled(Flex)`
+    width: 100%;
+    height: 100%;
+`;
+
+const Form = styled.form`
+    margin-top: 2rem;
+`;
+
+const ErrorBox = styled(Flex)`
+    padding: 1rem;
+    border-radius: 0.375rem;
+    background-color: #fef2f2;
+`;
+
+const InputGroup = styled(Flex)`
+    margin-top: 1.5rem;
+`;
+
+const Input = styled.input`
+    display: block;
+    width: 384px;
+    height: 57px;
+    margin-top: 0.25rem;
+    padding: 0.5rem 0.75rem;
+    background-color: #272734;
+    color: rgba(255, 255, 255, 0.4);
+    font-size: 1.10rem;
+    line-height: 1.5rem;
+    border: none;
+    border-radius: 0.5rem;
+
+    &::placeholder {
+        color: rgba(255, 255, 255, 0.4);
+    }
+
+    &:focus {
+        outline: none;
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.5);
+    }
+`;
+
+const SignupLinkWrapper = styled(Flex)`
+    margin-top: 0.5rem;
+`;
+
+const StyledLink = styled(Link)`
+    font-weight: 400;
+    font-size: 13px;
+    color: #DBDBDB;
+
+    &:hover {
+        color: #3b82f6;
+    }
+`;
+
+const ButtonWrapper = styled(Flex)`
+    margin-top: 51px;
+`;
+
+const SubmitButton = styled.button<{ disabled?: boolean }>`
+    width: 184px;
+    height: 53px;
+    border-radius: 36px;
+    background-color: #6F00FF;
+    color: white;
+    font-size: 17px;
+    font-weight: 800;
+    border: none;
+    cursor: ${props => props.disabled ? 'not-allowed' : 'pointer'};
+    opacity: ${props => props.disabled ? 0.7 : 1};
+
+    &:hover {
+        opacity: ${props => props.disabled ? 0.7 : 0.9};
+    }
+`;
