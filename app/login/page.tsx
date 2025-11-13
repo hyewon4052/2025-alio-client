@@ -43,56 +43,54 @@ export default function LoginPage() {
         <Container>
             <ZoomedWrapper width={width} height={height}>
                 <CenterBox center>
-                    <FormWrapper center>
-                        <Flex center gap={10}>
-                            <img src="/images/logo.svg" alt="" width={100}/>
-                            <Text fontSize={13} fontWeight={400}>해외취업 고민엔</Text>
-                        </Flex>
+                    <Flex center gap={10}>
+                        <img src="/images/logo.svg" alt="" width={100}/>
+                        <Text fontSize={13} fontWeight={400}>해외취업 고민엔</Text>
+                    </Flex>
 
-                        <Form onSubmit={handleSubmit}>
-                            {error && (
-                                <ErrorBox>
-                                    <Text fontSize={14} color="#991b1b">
-                                        {error}
-                                    </Text>
-                                </ErrorBox>
-                            )}
+                    <Form onSubmit={handleSubmit}>
+                        {error && (
+                            <ErrorBox>
+                                <Text fontSize={14} color="#991b1b">
+                                    {error}
+                                </Text>
+                            </ErrorBox>
+                        )}
 
-                            <InputGroup gap={16}>
-                                <Input
-                                    id="username"
-                                    name="username"
-                                    type="text"
-                                    required
-                                    value={formData.username}
-                                    onChange={(e) => setFormData({...formData, username: e.target.value})}
-                                    placeholder="아이디 작성하기"
-                                />
+                        <InputGroup gap={16}>
+                            <Input
+                                id="username"
+                                name="username"
+                                type="text"
+                                required
+                                value={formData.username}
+                                onChange={(e) => setFormData({...formData, username: e.target.value})}
+                                placeholder="아이디 작성하기"
+                            />
 
-                                <Input
-                                    id="password"
-                                    name="password"
-                                    type="password"
-                                    required
-                                    value={formData.password}
-                                    onChange={(e) => setFormData({...formData, password: e.target.value})}
-                                    placeholder="비밀번호 작성하기"
-                                />
-                            </InputGroup>
+                            <Input
+                                id="password"
+                                name="password"
+                                type="password"
+                                required
+                                value={formData.password}
+                                onChange={(e) => setFormData({...formData, password: e.target.value})}
+                                placeholder="비밀번호 작성하기"
+                            />
+                        </InputGroup>
 
-                            <SignupLinkWrapper flexEnd>
-                                <StyledLink href="/signup">
-                                    회원가입하기
-                                </StyledLink>
-                            </SignupLinkWrapper>
+                        <SignupLinkWrapper flexEnd>
+                            <StyledLink href="/signup">
+                                회원가입하기
+                            </StyledLink>
+                        </SignupLinkWrapper>
 
-                            <ButtonWrapper center>
-                                <SubmitButton type="submit" disabled={loading}>
-                                    {loading ? '로그인 중...' : '로그인'}
-                                </SubmitButton>
-                            </ButtonWrapper>
-                        </Form>
-                    </FormWrapper>
+                        <ButtonWrapper center>
+                            <SubmitButton type="submit" disabled={loading}>
+                                {loading ? '로그인 중...' : '로그인'}
+                            </SubmitButton>
+                        </ButtonWrapper>
+                    </Form>
                 </CenterBox>
             </ZoomedWrapper>
         </Container>
@@ -111,11 +109,6 @@ const Container = styled(Flex)`
 const CenterBox = styled(Flex)`
     width: 100%;
     height: 100%;
-`;
-
-const FormWrapper = styled(Flex)`
-    padding: 2rem;
-    background: transparent;
 `;
 
 const Form = styled.form`
