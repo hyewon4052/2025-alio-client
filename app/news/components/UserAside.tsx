@@ -1,50 +1,80 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import styled from "styled-components";
 import Flex from "@/components/common/Flex";
 import Text from "@/components/common/Text";
-
-interface UserActivityData {
-    id: string;
-    name: string;
-    message: string;
-}
-
-const userActivities: UserActivityData[] = [
-    {
-        id: "user-1",
-        name: "동민님",
-        message: "해당 개선안은 사용자 피드백과도 연결되네요.",
-    },
-    {
-        id: "user-2",
-        name: "하니님",
-        message:
-            "사용자 입장에서는 AI 추천이 아닌 챌린지를 추천받을 수 있는 기능이 있어야할 거 같아요.",
-    },
-    {
-        id: "user-3",
-        name: "하니님",
-        message:
-            "사용자 입장에서는 AI 추천이 아닌 챌린지를 추천받을 수 있는 기능이 있어야할 거 같아요.",
-    }
-];
-
+import { createNewsComment, getRecentNewsComments } from '@/lib/api/news';
+import { NewsComment } from '@/lib/types/news';
 
 export default function UserAside() {
+    const [comments, setComments] = useState<NewsComment[]>([]);
+    const [newComment, setNewComment] = useState('');
+    const [loading, setLoading] = useState(false);
+    const [submitting, setSubmitting] = useState(false);
+
+    useEffect(() => {
+        fetchComments();
+    }, []);
+
+    const fetchComments = async () => {
+        try {
+            setLoading(true);
+            const data = await getRecentNewsComments(3);
+            setComments(data);
+        } catch (error) {
+            console.error('Failed to fetch comments', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!newComment.trim()) return;
+
+        try {
+            setSubmitting(true);
+            await createNewsComment({ content: newComment.trim() });
+            setNewComment('');
+            await fetchComments();
+        } catch (error) {
+            console.error('Failed to create comment', error);
+        } finally {
+            setSubmitting(false);
+        }
+    };
+
     return (
         <Aside>
-            <Text fontWeight={600} color={"#FFFFFF"}>실시간 사용자</Text>
+            <Text fontWeight={600} color={"#FFFFFF"}>뉴스 댓글</Text>
+            <CommentForm onSubmit={handleSubmit}>
+                <CommentInput
+                    value={newComment}
+                    onChange={(e) => setNewComment(e.target.value)}
+                    placeholder="댓글을 입력하세요..."
+                    maxLength={500}
+                />
+                <SubmitButton type="submit" disabled={submitting || !newComment.trim()}>
+                    {submitting ? '작성 중...' : '작성'}
+                </SubmitButton>
+            </CommentForm>
             <Flex gap={12}>
-                {userActivities.map((user) => (
-                    <UserItem key={user.id}>
-                        <Avatar />
-                        <Flex gap={3}>
-                            <Text fontWeight={600} color={"white"} fontSize={12}>{user.name}</Text>
-                            <Text fontWeight={400} color={"#8c8c8c"} fontSize={12}>{user.message}</Text>
-                        </Flex>
-                    </UserItem>
-                ))}
+                {loading ? (
+                    <Text color={"#8c8c8c"} fontSize={12}>로딩 중...</Text>
+                ) : comments.length === 0 ? (
+                    <Text color={"#8c8c8c"} fontSize={12}>아직 댓글이 없습니다.</Text>
+                ) : (
+                    comments.map((comment) => (
+                        <UserItem key={comment.id}>
+                            <Avatar />
+                            <Flex gap={3}>
+                                <Text fontWeight={600} color={"white"} fontSize={12}>익명</Text>
+                                <Text fontWeight={400} color={"#8c8c8c"} fontSize={12}>{comment.content}</Text>
+                            </Flex>
+                        </UserItem>
+                    ))
+                )}
             </Flex>
         </Aside>
     );
@@ -72,5 +102,57 @@ const Avatar = styled.div`
     background: #4861ff;
     border-radius: 50%;
     flex-shrink: 0;
+`;
+
+const CommentForm = styled.form`
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 16px;
+`;
+
+const CommentInput = styled.textarea`
+    width: 100%;
+    padding: 10px 12px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    color: #ffffff;
+    font-size: 12px;
+    resize: none;
+    outline: none;
+    min-height: 60px;
+    font-family: inherit;
+
+    &::placeholder {
+        color: rgba(255, 255, 255, 0.3);
+    }
+
+    &:focus {
+        border-color: #4861ff;
+        background: rgba(255, 255, 255, 0.08);
+    }
+`;
+
+const SubmitButton = styled.button`
+    padding: 8px 16px;
+    background: #4861ff;
+    border: none;
+    border-radius: 8px;
+    color: #ffffff;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    align-self: flex-end;
+
+    &:hover:not(:disabled) {
+        background: #3a4fcc;
+    }
+
+    &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
 `;
 

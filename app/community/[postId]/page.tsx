@@ -1,24 +1,29 @@
-'use client';
+"use client";
 
-import { useEffect, useMemo, useState } from 'react';
-import Link from 'next/link';
-import { useParams, useRouter } from 'next/navigation';
-import { getCommunityCards, getCommunityPost } from '@/lib/api/community';
-import { CommunityPostCard, CommunityPostDetail } from '@/lib/types/community';
+import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
+import { useParams, useRouter } from "next/navigation";
+import styled from "styled-components";
+import Flex from "@/components/common/Flex";
+import ZoomWrapper from "@/components/common/ZoomWrapper";
+import useWindowSize from "@/hooks/useWindowSize";
+import { getCommunityCards, getCommunityPost } from "@/lib/api/community";
+import { CommunityPostCard, CommunityPostDetail } from "@/lib/types/community";
 
-const CASE_TYPE_LABEL: Record<string, string> = {
-  SUCCESS: '성공 사례',
-  RISK: '위험/피해 사례',
-};
+const RISK_KEYWORDS = [
+  "즉시 합격",
+  "숙소 제공",
+  "교육비 환급",
+  "고수익",
+  "텔레그램 문의",
+  "비자 정보 없음",
+  "치안 안 좋음",
+  "물가 비쌈",
+];
 
 function formatDate(value: string) {
-  return new Date(value).toLocaleString('ko-KR', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
+  const date = new Date(value);
+  return `${date.getMonth() + 1}/${date.getDate()}`;
 }
 
 function splitParagraphs(content: string) {
@@ -29,6 +34,7 @@ function splitParagraphs(content: string) {
 }
 
 export default function CommunityDetailPage() {
+  const { width, height } = useWindowSize();
   const params = useParams<{ postId: string }>();
   const router = useRouter();
   const postId = useMemo(() => Number(params?.postId), [params]);
@@ -40,7 +46,7 @@ export default function CommunityDetailPage() {
   useEffect(() => {
     const fetchDetail = async () => {
       if (!postId || Number.isNaN(postId)) {
-        setError('잘못된 게시글 ID입니다.');
+        setError("잘못된 게시글 ID입니다.");
         setLoading(false);
         return;
       }
@@ -52,10 +58,10 @@ export default function CommunityDetailPage() {
           getCommunityCards(6),
         ]);
         setPost(detail);
-        setRelated(cards.filter((card) => card.id !== postId).slice(0, 4));
+        setRelated(cards.filter((card) => card.id !== postId).slice(0, 2));
       } catch (err) {
         console.error(err);
-        setError('게시글을 불러오지 못했습니다.');
+        setError("게시글을 불러오지 못했습니다.");
       } finally {
         setLoading(false);
       }
@@ -66,153 +72,266 @@ export default function CommunityDetailPage() {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center text-slate-400">
-        게시글을 불러오는 중입니다...
-      </div>
+      <Container>
+        <ContentWrapper>
+          <LoadingText>게시글을 불러오는 중입니다...</LoadingText>
+        </ContentWrapper>
+      </Container>
     );
   }
 
   if (error || !post) {
     return (
-      <div className="min-h-screen text-slate-100">
-        <div className="mx-auto max-w-3xl px-4 pb-20 pt-16">
-          <button
-            onClick={() => router.back()}
-            className="text-sm text-slate-400 transition hover:text-fuchsia-300"
-          >
-            ← 뒤로가기
-          </button>
-          <div className="glass-card mt-8 rounded-3xl px-6 py-16 text-center text-sm text-slate-300">
-            {error ?? '게시글 정보를 찾을 수 없습니다.'}
-            <div className="mt-6">
-              <Link
-                href="/community"
-                className="rounded-full bg-fuchsia-500 px-5 py-3 text-sm font-semibold text-white transition hover:bg-fuchsia-400"
-              >
-                커뮤니티로 돌아가기
-              </Link>
-            </div>
-          </div>
-        </div>
-      </div>
+      <Container>
+        <ContentWrapper>
+          <ErrorCard>
+            <ErrorText>{error ?? "게시글 정보를 찾을 수 없습니다."}</ErrorText>
+            <BackLink href="/community">커뮤니티로 돌아가기</BackLink>
+          </ErrorCard>
+        </ContentWrapper>
+      </Container>
     );
   }
 
   const paragraphs = splitParagraphs(post.content);
+  const isRiskCase = post.caseType === "RISK";
 
   return (
-    <div className="min-h-screen text-slate-100">
-      <div className="mx-auto max-w-4xl px-4 pb-24 pt-16">
-        <div className="flex items-center justify-between">
-          <button
-            onClick={() => router.back()}
-            className="text-sm text-slate-400 transition hover:text-fuchsia-300"
-          >
-            ← 목록으로 돌아가기
-          </button>
-          <Link
-            href="/community/new"
-            className="rounded-full border border-white/15 px-5 py-2 text-sm font-semibold text-slate-200 transition hover:bg-white/10"
-          >
-            나도 후기 쓰기
-          </Link>
-        </div>
+    <Container>
+      <ZoomWrapper width={width} height={height}>
+        <ContentWrapper>
+          <PostCard>
+            <PostHeader>
+              <PostTitle>{post.title}</PostTitle>
+              <PostMeta>
+                <MetaItem>{post.author}님</MetaItem>
+                {post.country && <MetaItem>{post.country}</MetaItem>}
+                <MetaItem>작성일 {formatDate(post.createdAt)}</MetaItem>
+                <MetaItem>조회수 {post.viewCount}회</MetaItem>
+              </PostMeta>
+            </PostHeader>
 
-        <article className="glass-card mt-8 rounded-3xl px-8 py-10">
-          <div className="flex flex-wrap items-center justify-between gap-3 text-xs text-slate-300">
-            <div className="flex items-center gap-3">
-              <span className="rounded-full bg-fuchsia-500/20 px-4 py-1 text-fuchsia-200">
-                {CASE_TYPE_LABEL[post.caseType] ?? post.caseType}
-              </span>
-              <span className="rounded-full bg-white/5 px-3 py-1 text-slate-300">
-                평점 {post.rating}/5
-              </span>
-            </div>
-            <span>{formatDate(post.createdAt)}</span>
-          </div>
-          <h1 className="mt-6 text-3xl font-bold text-white">{post.title}</h1>
-          <p className="mt-2 text-sm text-slate-300">작성자 {post.author}</p>
+            {isRiskCase && (
+              <RiskKeywordsSection>
+                <RiskKeywordsLabel>주요 위험 키워드</RiskKeywordsLabel>
+                <RiskKeywordsList>
+                  {RISK_KEYWORDS.map((keyword) => (
+                    <RiskKeywordTag key={keyword}>{keyword}</RiskKeywordTag>
+                  ))}
+                </RiskKeywordsList>
+              </RiskKeywordsSection>
+            )}
 
-          <section className="mt-8 rounded-3xl border border-fuchsia-400/30 bg-fuchsia-500/10 px-6 py-5">
-            <div className="flex items-center justify-between text-xs text-fuchsia-200">
-              <span>AI 요약</span>
-              <span className="rounded-full bg-white/10 px-3 py-1 text-[11px] text-fuchsia-100">리스크 인사이트</span>
-            </div>
-            <p className="mt-3 text-sm leading-6 text-fuchsia-100">
-              {post.summary || '요약 정보가 아직 준비되지 않았습니다.'}
-            </p>
-          </section>
-
-          <section className="mt-10 space-y-5 text-sm leading-7 text-slate-100">
-            {paragraphs.length === 0
-              ? (
-                <p className="text-slate-300">
-                  작성된 본문이 없습니다. 상세 내용은 작성자에게 문의해주세요.
-                </p>
-                )
-              : (
+            <PostContent>
+              {paragraphs.length === 0 ? (
+                <EmptyText>작성된 본문이 없습니다.</EmptyText>
+              ) : (
                 paragraphs.map((paragraph, index) => (
-                  <p key={index} className="rounded-2xl bg-white/4 px-5 py-3 text-slate-200">
-                    {paragraph}
-                  </p>
+                  <Paragraph key={index}>{paragraph}</Paragraph>
                 ))
               )}
-          </section>
+            </PostContent>
+          </PostCard>
 
-          <div className="mt-8 flex flex-wrap gap-3">
-            {post.tags.map((tag) => (
-              <Link
-                key={tag}
-                href={`/community?tag=${encodeURIComponent(tag)}`}
-                className="rounded-full bg-white/10 px-3 py-1 text-xs text-slate-200 transition hover:bg-white/20"
-              >
-                #{tag}
-              </Link>
-            ))}
-          </div>
-        </article>
-
-        {related.length > 0 && (
-          <section className="mt-12">
-            <div className="flex items-center justify-between">
-              <h2 className="text-lg font-semibold text-white">비슷한 사례 보기</h2>
-              <Link href="/community" className="text-xs text-slate-400 transition hover:text-fuchsia-300">
-                전체보기 →
-              </Link>
-            </div>
-            <div className="mt-5 grid gap-4 md:grid-cols-2">
-              {related.map((item) => (
-                <Link
-                  key={item.id}
-                  href={`/community/${item.id}`}
-                  className="glass-card-light group flex h-full flex-col justify-between rounded-3xl px-5 py-6 transition hover:bg-white/15"
-                >
-                  <div>
-                    <div className="flex items-center justify-between text-[11px] text-slate-400">
-                      <span>{CASE_TYPE_LABEL[item.caseType] ?? item.caseType}</span>
-                      <span>{formatDate(item.createdAt)}</span>
-                    </div>
-                    <h3 className="mt-3 text-base font-semibold text-white">{item.title}</h3>
-                    <p className="mt-3 line-clamp-3 text-sm text-slate-200">
-                      {item.summary || '요약 준비 중입니다. 상세 페이지에서 내용을 확인하세요.'}
-                    </p>
-                  </div>
-                  <div className="mt-4 flex flex-wrap gap-2">
-                    {item.tags.slice(0, 3).map((tag) => (
-                      <span
-                        key={tag}
-                        className="rounded-full bg-white/10 px-3 py-1 text-xs text-slate-200 transition group-hover:bg-white/20"
-                      >
-                        #{tag}
-                      </span>
-                    ))}
-                  </div>
-                </Link>
-              ))}
-            </div>
-          </section>
-        )}
-      </div>
-    </div>
+          {related.length > 0 && (
+            <RelatedSection>
+              <RelatedTitle>비슷한 사례 보기</RelatedTitle>
+              <RelatedList>
+                {related.map((item) => (
+                  <RelatedCard key={item.id} href={`/community/${item.id}`}>
+                    <RelatedText>
+                      {item.summary ||
+                        "해당 개선안은 사용자 피드백과도 연결되네요."}
+                    </RelatedText>
+                    <RelatedTime>5분전</RelatedTime>
+                  </RelatedCard>
+                ))}
+              </RelatedList>
+            </RelatedSection>
+          )}
+        </ContentWrapper>
+      </ZoomWrapper>
+    </Container>
   );
 }
+
+const Container = styled.div`
+  width: 100%;
+  min-height: 100vh;
+  height: 100vh;
+  background-color: #1d1c25;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 58px 0 100px 0;
+  position: relative;
+  z-index: 0;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+`;
+
+const ContentWrapper = styled.div`
+  width: 100%;
+  max-width: 1200px;
+  padding: 0 40px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+`;
+
+const LoadingText = styled.div`
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 16px;
+`;
+
+const ErrorCard = styled.div`
+  background: #23222e;
+  border: 1px solid #22212d;
+  border-radius: 12px;
+  padding: 40px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+`;
+
+const ErrorText = styled.div`
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 14px;
+  text-align: center;
+`;
+
+const BackLink = styled(Link)`
+  padding: 12px 24px;
+  background: #6f00ff;
+  border-radius: 24px;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: opacity 0.2s;
+
+  &:hover {
+    opacity: 0.9;
+  }
+`;
+
+const PostCard = styled.div`
+  width: 100%;
+  background: #23222e;
+  border: 1px solid #22212d;
+  border-radius: 12px;
+  padding: 48px;
+`;
+
+const PostHeader = styled.div`
+  margin-bottom: 32px;
+`;
+
+const PostTitle = styled.h1`
+  font-size: 22px;
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: 16px;
+  line-height: 1.5;
+`;
+
+const PostMeta = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  font-size: 15px;
+  color: rgba(255, 255, 255, 0.6);
+`;
+
+const MetaItem = styled.span``;
+
+const RiskKeywordsSection = styled.div`
+  margin-bottom: 32px;
+`;
+
+const RiskKeywordsLabel = styled.div`
+  font-size: 14px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.8);
+  margin-bottom: 12px;
+`;
+
+const RiskKeywordsList = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+`;
+
+const RiskKeywordTag = styled.span`
+  padding: 6px 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 16px;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.8);
+`;
+
+const PostContent = styled.div`
+  margin-bottom: 32px;
+`;
+
+const Paragraph = styled.p`
+  font-size: 15px;
+  line-height: 1.7;
+  color: rgba(255, 255, 255, 0.8);
+  margin-bottom: 16px;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+`;
+
+const EmptyText = styled.p`
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.4);
+`;
+
+const RelatedSection = styled.div`
+  width: 100%;
+`;
+
+const RelatedTitle = styled.h2`
+  font-size: 19px;
+  font-weight: 600;
+  color: #ffffff;
+  margin-bottom: 20px;
+`;
+
+const RelatedList = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+`;
+
+const RelatedCard = styled(Link)`
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 20px;
+  background: #23222e;
+  border: 1px solid #22212d;
+  border-radius: 12px;
+  text-decoration: none;
+  transition: all 0.2s;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.03);
+  }
+`;
+
+const RelatedText = styled.p`
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.8);
+  line-height: 1.5;
+`;
+
+const RelatedTime = styled.span`
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.4);
+`;
