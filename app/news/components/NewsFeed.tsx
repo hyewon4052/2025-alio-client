@@ -11,7 +11,6 @@ export default function NewsFeed() {
     if (isLoading) return <Flex center><Text color="#fff">분석 중...</Text></Flex>;
     if (isError) return <Flex center><Text color="#f00">분석 실패</Text></Flex>;
     if (!data) return null;
-
     return (
         <NewsContainer gap={88}>
             <Flex gap={48}>
@@ -28,7 +27,7 @@ export default function NewsFeed() {
                     <Flex flex={1} gap={40} verticalCenter>
                         {data?.newsSummaries.map((article) => (
                             <Flex key={article.title} gap={30}>
-                                <Flex gap={6} verticalCenter>
+                                <NewsItem gap={6} onClick={() => window.open(article.url, "_blank")}>
                                     <Text
                                         fontSize={20}
                                         fontWeight={500}
@@ -37,7 +36,7 @@ export default function NewsFeed() {
                                         lineHeight="26.6px"
                                         noWrap
                                     >
-                                        {article.source}
+                                        네이버 뉴스
                                     </Text>
                                     <Text
                                         as="h3"
@@ -50,7 +49,7 @@ export default function NewsFeed() {
                                     >
                                         {article.title}
                                     </Text>
-                                </Flex>
+                                </NewsItem>
                             </Flex>
                         ))}
                     </Flex>
@@ -60,11 +59,21 @@ export default function NewsFeed() {
     );
 }
 
+const NewsItem = styled(Flex)`
+    border-radius: 10px;
+    padding: 12px;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.2s;
 
+    &:hover {
+        background: rgba(255, 255, 255, 0.1);
+        transform: translateY(-2px);
+    }
+`;
 const NewsContainer = styled(Flex)`
     width: 898px;
     height: 100%;
-    padding: 25px 31px;
+    padding: 30px 31px;
     border-radius: 18px;
     border: 1px solid rgba(155, 155, 155, 0.30);
     background: #22212D;
