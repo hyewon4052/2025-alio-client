@@ -33,129 +33,139 @@ export default function NewsSummaryChart() {
     const pieData = top4.map((k) => ({name: k.keyword, value: k.frequency}));
 
     return (
-        <NewsSummaryChartWrapper gap={35} flexStart>
-            <Flex>
-                <Text fontSize={28} fontWeight={600} color={"#FFFFFF"}>
-                    주요 뉴스 요약 차트
-                </Text>
-            </Flex>
-            <CardWrapper center gap={20} row>
-                <ResultCard center flexStart>
-                    <CardInner>
-                        <Flex gap={10} center flexStart>
-                            <Text fontSize={20} fontWeight={500} color={"#FFFFFF"}>결과 요약</Text>
-                            <Text fontSize={11} fontWeight={500} color={"#919191"}>{formattedDate}</Text>
-                        </Flex>
-                        <Divider/>
-                        <Text fontSize={15} fontWeight={400} color={"#FFFFFF"}>{data.trendSummary}</Text>
-                    </CardInner>
-                </ResultCard>
-
-                <ChartWrapper center>
-                    <Flex gap={10}>
-                        <Text fontSize={16} fontWeight={600}>많이 언급된 단어</Text>
-                        <Flex row gap={40}>
-                            <Flex gap={11}>
-                                {top4.map((k, i) => (
-                                    <Text key={i} color="#B1B1B1" fontSize={13}>
-                                        {k.keyword} {k.frequency}
-                                    </Text>
-                                ))}
+        <NewsSummaryChartWrapper gap={35} center>
+            <Flex center flexStart>
+                <Flex>
+                    <Text fontSize={28} fontWeight={600} color={"#FFFFFF"}>
+                        주요 뉴스 요약 차트
+                    </Text>
+                </Flex>
+                <CardWrapper center gap={20} row>
+                    <ResultCard center flexStart>
+                        <CardInner>
+                            <Flex gap={10} center flexStart>
+                                <Text fontSize={20} fontWeight={500} color={"#FFFFFF"}>결과 요약</Text>
+                                <Text fontSize={11} fontWeight={500} color={"#919191"}>{formattedDate}</Text>
                             </Flex>
+                            <Divider/>
+                            <Text fontSize={15} fontWeight={400} color={"#FFFFFF"}>{data.trendSummary}</Text>
+                        </CardInner>
+                    </ResultCard>
 
-                            <div style={{position: "relative", width: 180, height: 180}}>
-                                <PieChart width={180} height={180}>
-                                    <Pie
-                                        data={pieData}
-                                        dataKey="value"
-                                        nameKey="name"
-                                        innerRadius={50}
-                                        outerRadius={80}
-                                        paddingAngle={3}
-                                    >
-                                        {pieData.map((entry, index) => (
-                                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]}/>
-                                        ))}
-                                    </Pie>
-                                </PieChart>
+                    <ChartWrapper center>
+                        <Flex gap={10}>
+                            <Text fontSize={16} fontWeight={600}>많이 언급된 단어</Text>
+                            <Flex row gap={40}>
+                                <Flex gap={11}>
+                                    {top4.map((k, i) => (
+                                        <Text key={i} color="#B1B1B1" fontSize={13}>
+                                            {k.keyword} {k.frequency}
+                                        </Text>
+                                    ))}
+                                </Flex>
 
-                                {top1 && (
-                                    <div
-                                        style={{
-                                            position: "absolute",
-                                            top: "50%",
-                                            left: "50%",
-                                            transform: "translate(-50%, -50%)",
-                                            textAlign: "center",
-                                        }}
-                                    >
-                                        <Flex>
-                                            <Text fontSize={16} fontWeight={700} color="#fff">
-                                                {top1.keyword}
-                                            </Text>
-                                            <Text fontSize={12} color="#ccc">
-                                                검색 순위 1위
-                                            </Text>
-                                        </Flex>
-                                    </div>
-                                )}
-                            </div>
-                        </Flex>
-                    </Flex>
-                </ChartWrapper>
-
-                <ChartArticle>
-                    <ChartContainer gap={8} verticalCenter flexStart>
-                        <Text
-                            fontSize={16}
-                            fontWeight={600}
-                            color="white"
-                        >
-                            주목되고 있는 산업군
-                        </Text>
-                        <ChartBarsWrapper row gap={20} center>
-                            {bars.slice(0, 5).map((bar, i) => (
-                                <Flex key={i} width={78} center>
-                                    <BarWrapper flexEnd>
-                                        <Bar height={bar.height} bgColor={bar.bgColor}/>
-                                        <CountLabel
-                                            fontSize={12}
-                                            fontWeight={700}
-                                            color={bar.height >= 90 ? "white" : "#252736"}
+                                <div style={{position: "relative", width: 180, height: 180}}>
+                                    <PieChart width={180} height={180}>
+                                        <Pie
+                                            data={pieData}
+                                            dataKey="value"
+                                            nameKey="name"
+                                            innerRadius={50}
+                                            outerRadius={80}
+                                            paddingAngle={3}
                                         >
-                                            {bar.issueCount}건
-                                        </CountLabel>
-                                    </BarWrapper>
-                                    <Flex flexStart>
-                                        <Text
-                                            fontSize={14}
-                                            color="#cccccc"
-                                            center
+                                            {pieData.map((entry, index) => (
+                                                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]}/>
+                                            ))}
+                                        </Pie>
+                                    </PieChart>
+
+                                    {top1 && (
+                                        <div
                                             style={{
-                                                position: "relative",
-                                                bottom: "-10px",
+                                                position: "absolute",
+                                                top: "50%",
+                                                left: "50%",
+                                                transform: "translate(-50%, -50%)",
                                                 textAlign: "center",
-                                                wordBreak: "break-word"
                                             }}
                                         >
-                                            {bar.industry}
-                                        </Text>
+                                            <Flex>
+                                                <Text fontSize={16} fontWeight={700} color="#fff">
+                                                    {top1.keyword}
+                                                </Text>
+                                                <Text fontSize={12} color="#ccc">
+                                                    검색 순위 1위
+                                                </Text>
+                                            </Flex>
+                                        </div>
+                                    )}
+                                </div>
+                            </Flex>
+                        </Flex>
+                    </ChartWrapper>
+
+                    <ChartArticle>
+                        <ChartContainer gap={8} verticalCenter flexStart>
+                            <Text
+                                fontSize={16}
+                                fontWeight={600}
+                                color="white"
+                            >
+                                주목되고 있는 산업군
+                            </Text>
+                            <ChartBarsWrapper row gap={20} center>
+                                {bars.slice(0, 5).map((bar, i) => (
+                                    <Flex key={i} width={78} center>
+                                        <BarWrapper flexEnd>
+                                            <Bar height={bar.height} bgColor={bar.bgColor}/>
+                                            <CountLabel
+                                                fontSize={12}
+                                                fontWeight={700}
+                                                color={bar.height >= 90 ? "white" : "#252736"}
+                                            >
+                                                {bar.issueCount}건
+                                            </CountLabel>
+                                        </BarWrapper>
+                                        <IndustryTextWrapper>
+                                            <Text
+                                                fontSize={14}
+                                                color="#cccccc"
+                                                center
+                                                style={{
+                                                    position: "relative",
+                                                    bottom: "-10px",
+                                                    textAlign: "center",
+                                                    wordBreak: "break-word",
+                                                    wordWrap:"break-word"
+                                                }}
+                                            >
+                                                {bar.industry}
+                                            </Text>
+                                        </IndustryTextWrapper>
                                     </Flex>
-                                </Flex>
-                            ))}
-                        </ChartBarsWrapper>
-                    </ChartContainer>
-                </ChartArticle>
-            </CardWrapper>
+                                ))}
+                            </ChartBarsWrapper>
+                        </ChartContainer>
+                    </ChartArticle>
+                </CardWrapper>
+            </Flex>
         </NewsSummaryChartWrapper>
     );
 }
+
+const IndustryTextWrapper = styled(Flex)`
+    position: absolute;
+    top: 245px;
+    width: 77px;
+`;
 
 const NewsSummaryChartWrapper = styled(Flex)`
     padding: 25px 31px;
     border-radius: 18px;
     border: 1px solid rgba(155, 155, 155, 0.30);
     background: #22212D;
+    height: 500px;
 `;
 
 const ResultCard = styled(Flex)`
@@ -226,7 +236,7 @@ const Bar = styled.div<{ height: number; bgColor: string }>`
 
 const CountLabel = styled(Text)`
     position: absolute;
-    bottom: 5px;
+    bottom: -1px;
     width: 100%;
     text-align: center;
     color: white;

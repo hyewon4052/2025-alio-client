@@ -29,22 +29,22 @@ export default function NewsFeed() {
                             <Flex key={article.title} gap={30}>
                                 <NewsItem gap={6} onClick={() => window.open(article.url, "_blank")}>
                                     <Text
-                                        fontSize={20}
-                                        fontWeight={500}
-                                        color="white"
-                                        letterSpacing={-0.4}
-                                        lineHeight="26.6px"
-                                        noWrap
-                                    >
-                                        네이버 뉴스
-                                    </Text>
-                                    <Text
                                         as="h3"
                                         fontSize={18}
                                         fontFamily="'Pretendard-Regular', Helvetica"
                                         color="#b3b3b3"
                                         letterSpacing={-0.36}
                                         lineHeight="23.9px"
+                                        noWrap
+                                    >
+                                        네이버 뉴스
+                                    </Text>
+                                    <Text
+                                        fontSize={20}
+                                        fontWeight={500}
+                                        color="white"
+                                        letterSpacing={-0.4}
+                                        lineHeight="26.6px"
                                         noWrap
                                     >
                                         {article.title}
