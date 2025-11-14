@@ -115,35 +115,33 @@ export default function NewsSummaryChart() {
                         </Text>
                         <ChartBarsWrapper row gap={20} center>
                             {bars.slice(0, 5).map((bar, i) => (
-                                <>
-                                    <Flex key={i} width={78} center>
-                                        <BarWrapper flexEnd>
-                                            <Bar height={bar.height} bgColor={bar.bgColor}/>
-                                            <CountLabel
-                                                fontSize={12}
-                                                fontWeight={700}
-                                                color={bar.height >= 90 ? "white" : "#252736"}
-                                            >
-                                                {bar.issueCount}건
-                                            </CountLabel>
-                                        </BarWrapper>
-                                        <Flex flexStart>
-                                            <Text
-                                                fontSize={14}
-                                                color="#cccccc"
-                                                center
-                                                style={{
-                                                    position: "relative",
-                                                    bottom: "-10px",
-                                                    textAlign: "center",
-                                                    wordBreak: "break-word"
-                                                }}
-                                            >
-                                                {bar.industry}
-                                            </Text>
-                                        </Flex>
+                                <Flex key={i} width={78} center>
+                                    <BarWrapper flexEnd>
+                                        <Bar height={bar.height} bgColor={bar.bgColor}/>
+                                        <CountLabel
+                                            fontSize={12}
+                                            fontWeight={700}
+                                            color={bar.height >= 90 ? "white" : "#252736"}
+                                        >
+                                            {bar.issueCount}건
+                                        </CountLabel>
+                                    </BarWrapper>
+                                    <Flex flexStart>
+                                        <Text
+                                            fontSize={14}
+                                            color="#cccccc"
+                                            center
+                                            style={{
+                                                position: "relative",
+                                                bottom: "-10px",
+                                                textAlign: "center",
+                                                wordBreak: "break-word"
+                                            }}
+                                        >
+                                            {bar.industry}
+                                        </Text>
                                     </Flex>
-                                </>
+                                </Flex>
                             ))}
                         </ChartBarsWrapper>
                     </ChartContainer>
