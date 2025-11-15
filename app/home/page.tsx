@@ -1,12 +1,21 @@
 'use client';
 
-import styled from "styled-components";
+import styled, { keyframes, css } from "styled-components";
 import ZoomWrapper from "@/components/common/ZoomWrapper";
 import useWindowSize from "@/hooks/useWindowSize";
 import Flex from "@/components/common/Flex";
 import {useState} from "react";
 import {useRouter} from "next/navigation";
 import {useJobPostingAnalysis} from "@/hooks/useJobPostingAnalysis";
+
+const shimmer = keyframes`
+    0% {
+        background-position: -1000px 0;
+    }
+    100% {
+        background-position: 1000px 0;
+    }
+`;
 
 export default function HomePage() {
     const { width, height } = useWindowSize();
@@ -45,42 +54,52 @@ export default function HomePage() {
                             해외취업 공고의 정보를 빠르게 팩트 체크 받을 수 있습니다.
                         </SubTitle>
                     </HeaderSection>
-                    <UploadBox gap={42} style={{marginTop: 50}}>
+                    <LoadingUploadBox 
+                        $isLoading={mutation.isPending}
+                        gap={42} 
+                        style={{marginTop: 50}}
+                    >
                         <Flex row center gap={16} width="100%">
-                            <StyledInput
-                                type="text"
-                                value={input}
-                                onChange={(e) => setInput(e.target.value)}
-                                placeholder="공고의 url, 텍스트, 스크린샷을 등록해주세요!"
-                            />
-                            <UploadButton onClick={handleAnalyze} disabled={mutation.isPending}>
-                                {mutation.isPending ? "..." : (
-                                    <svg
-                                        className="w-6 h-6"
-                                        viewBox="0 0 24 24"
-                                        fill="none"
-                                        xmlns="http://www.w3.org/2000/svg"
-                                    >
-                                        <path
-                                            d="M22 2L11 13"
-                                            stroke="#7c7c7c"
-                                            strokeWidth="2"
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
-                                        />
-                                        <path
-                                            d="M22 2L15 22L11 13L2 9L22 2Z"
-                                            stroke="#7c7c7c"
-                                            strokeWidth="2"
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
-                                        />
-                                    </svg>
-                                )}
-                            </UploadButton>
-
+                            {mutation.isPending ? (
+                                <>
+                                    <SkeletonInput />
+                                    <SkeletonButton />
+                                </>
+                            ) : (
+                                <>
+                                    <StyledInput
+                                        type="text"
+                                        value={input}
+                                        onChange={(e) => setInput(e.target.value)}
+                                        placeholder="공고의 url, 텍스트, 스크린샷을 등록해주세요!"
+                                    />
+                                    <UploadButton onClick={handleAnalyze} disabled={mutation.isPending}>
+                                        <svg
+                                            className="w-6 h-6"
+                                            viewBox="0 0 24 24"
+                                            fill="none"
+                                            xmlns="http://www.w3.org/2000/svg"
+                                        >
+                                            <path
+                                                d="M22 2L11 13"
+                                                stroke="#7c7c7c"
+                                                strokeWidth="2"
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                            />
+                                            <path
+                                                d="M22 2L15 22L11 13L2 9L22 2Z"
+                                                stroke="#7c7c7c"
+                                                strokeWidth="2"
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                            />
+                                        </svg>
+                                    </UploadButton>
+                                </>
+                            )}
                         </Flex>
-                    </UploadBox>
+                    </LoadingUploadBox>
                 </Flex>
             </ZoomWrapper>
         </Container>
@@ -121,6 +140,58 @@ const UploadBox = styled(Flex)`
     background: #23222e;
     border: 1px solid #22212d;
     border-radius: 12px;
+`;
+
+const LoadingUploadBox = styled(UploadBox)<{ $isLoading: boolean }>`
+    position: relative;
+    overflow: hidden;
+    
+    ${props => props.$isLoading ? css`
+        &::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                90deg,
+                transparent,
+                rgba(255, 255, 255, 0.1),
+                transparent
+            );
+            animation: ${shimmer} 2s infinite;
+        }
+    ` : ''}
+`;
+
+const SkeletonInput = styled.div`
+    flex: 1;
+    height: 24px;
+    background: linear-gradient(
+        90deg,
+        rgba(255, 255, 255, 0.05) 0%,
+        rgba(255, 255, 255, 0.15) 50%,
+        rgba(255, 255, 255, 0.05) 100%
+    );
+    background-size: 1000px 100%;
+    border-radius: 4px;
+    animation: ${shimmer} 2s infinite;
+`;
+
+const SkeletonButton = styled.div`
+    flex-shrink: 0;
+    width: 24px;
+    height: 24px;
+    background: linear-gradient(
+        90deg,
+        rgba(255, 255, 255, 0.05) 0%,
+        rgba(255, 255, 255, 0.15) 50%,
+        rgba(255, 255, 255, 0.05) 100%
+    );
+    background-size: 1000px 100%;
+    border-radius: 4px;
+    animation: ${shimmer} 2s infinite;
 `;
 
 const StyledInput = styled.input`

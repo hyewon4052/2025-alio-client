@@ -2,7 +2,7 @@
 
 import {useMarketTrend} from "@/hooks/useMarketTrend";
 import {PieChart, Pie, Cell} from "recharts";
-import styled from "styled-components";
+import styled, { keyframes } from "styled-components";
 import Flex from "@/components/common/Flex";
 import Text from "@/components/common/Text";
 
@@ -11,12 +11,86 @@ const formattedDate = `${today.getFullYear()}년 ${today.getMonth() + 1}월 ${to
 const COLORS = ["#b3beff", "#8e9fff", "#667bff", "#4861ff"];
 const barColors = ["#b3beff", "#8e9fff", "#667bff", "#4861ff", "#7f8cff"];
 
+const shimmer = keyframes`
+    0% {
+        background-position: -1000px 0;
+    }
+    100% {
+        background-position: 1000px 0;
+    }
+`;
+
 export default function NewsSummaryChart() {
 
     const {data, isLoading, isError} = useMarketTrend();
 
-    if (isLoading) return <Flex center><Text color="#fff">분석 중...</Text></Flex>;
-    if (isError) return <Flex center><Text color="#f00">분석 실패</Text></Flex>;
+    if (isError) return (
+        <NewsSummaryChartWrapper gap={35} center>
+            <Flex center>
+                <Text color="#f00">분석 실패</Text>
+            </Flex>
+        </NewsSummaryChartWrapper>
+    );
+
+    if (isLoading) {
+        return (
+            <NewsSummaryChartWrapper gap={35} center>
+                <Flex center flexStart>
+                    <Flex>
+                        <SkeletonText width="200px" height="34px" />
+                    </Flex>
+                    <CardWrapper center gap={20} row>
+                        <LoadingResultCard center flexStart>
+                            <CardInner>
+                                <Flex gap={10} center flexStart>
+                                    <SkeletonText width="100px" height="24px" />
+                                    <SkeletonText width="120px" height="13px" />
+                                </Flex>
+                                <Divider />
+                                <SkeletonText width="100%" height="20px" />
+                                <SkeletonText width="80%" height="20px" />
+                                <SkeletonText width="90%" height="20px" />
+                            </CardInner>
+                        </LoadingResultCard>
+
+                        <LoadingChartWrapper center>
+                            <Flex gap={10}>
+                                <SkeletonText width="150px" height="19px" />
+                                <Flex row gap={40}>
+                                    <Flex gap={11}>
+                                        {[...Array(4)].map((_, i) => (
+                                            <SkeletonText key={i} width="60px" height="16px" />
+                                        ))}
+                                    </Flex>
+                                    <SkeletonCircle width="180px" height="180px" />
+                                </Flex>
+                            </Flex>
+                        </LoadingChartWrapper>
+
+                        <LoadingChartArticle>
+                            <ChartContainer gap={8} verticalCenter flexStart>
+                                <SkeletonText width="180px" height="19px" />
+                                <ChartBarsWrapper row gap={20} center>
+                                    {[80, 60, 90, 70, 85].map((height, i) => (
+                                        <Flex key={i} width={78} center>
+                                            <BarWrapper flexEnd>
+                                                <SkeletonBar height={height} />
+                                                <SkeletonText width="40px" height="14px" />
+                                            </BarWrapper>
+                                            <IndustryTextWrapper>
+                                                <SkeletonText width="60px" height="16px" />
+                                            </IndustryTextWrapper>
+                                        </Flex>
+                                    ))}
+                                </ChartBarsWrapper>
+                            </ChartContainer>
+                        </LoadingChartArticle>
+                    </CardWrapper>
+                </Flex>
+            </NewsSummaryChartWrapper>
+        );
+    }
+
     if (!data) return null;
 
     const maxBarHeight = 100;
@@ -118,7 +192,7 @@ export default function NewsSummaryChart() {
                                 {bars.slice(0, 5).map((bar, i) => (
                                     <Flex key={i} width={78} center>
                                         <BarWrapper flexEnd>
-                                            <Bar height={bar.height} bgColor={bar.bgColor}/>
+                                            <Bar $height={bar.height} $bgColor={bar.bgColor}/>
                                             <CountLabel
                                                 fontSize={12}
                                                 fontWeight={700}
@@ -136,8 +210,7 @@ export default function NewsSummaryChart() {
                                                     position: "relative",
                                                     bottom: "-10px",
                                                     textAlign: "center",
-                                                    wordBreak: "break-word",
-                                                    wordWrap:"break-word"
+                                                    wordBreak: "break-word"
                                                 }}
                                             >
                                                 {bar.industry}
@@ -156,7 +229,7 @@ export default function NewsSummaryChart() {
 
 const IndustryTextWrapper = styled(Flex)`
     position: absolute;
-    top: 245px;
+    top: 260px;
     width: 77px;
 `;
 
@@ -195,7 +268,7 @@ const CardWrapper = styled(Flex)`
 
 const ChartArticle = styled.article`
     width: 526px;
-    height: 280px;
+    height: 320px;
 `;
 
 const ChartContainer = styled(Flex)`
@@ -218,17 +291,17 @@ const BarWrapper = styled(Flex)`
 
 const ChartWrapper = styled(Flex)`
     width: 362px;
-    height: 280px;
+    height: 320px;
     padding: 11px 18px;
     gap: 10px;
     border-radius: 10px;
     background: #1D1B25;
 `;
 
-const Bar = styled.div<{ height: number; bgColor: string }>`
+const Bar = styled.div<{ $height: number; $bgColor: string }>`
     width: 100%;
-    height: ${(props) => props.height}px;
-    background-color: ${(props) => props.bgColor};
+    height: ${(props) => props.$height}px;
+    background-color: ${(props) => props.$bgColor};
     border-radius: 10px;
     position: relative;
     bottom: 0;
@@ -236,10 +309,115 @@ const Bar = styled.div<{ height: number; bgColor: string }>`
 
 const CountLabel = styled(Text)`
     position: absolute;
-    bottom: -1px;
+    bottom: 3px;
     width: 100%;
     text-align: center;
     color: white;
     font-weight: 700;
     font-size: 12px;
+`;
+
+const SkeletonText = styled.div<{ width: string; height: string }>`
+    width: ${props => props.width};
+    height: ${props => props.height};
+    background: linear-gradient(
+        90deg,
+        rgba(255, 255, 255, 0.05) 0%,
+        rgba(255, 255, 255, 0.15) 50%,
+        rgba(255, 255, 255, 0.05) 100%
+    );
+    background-size: 1000px 100%;
+    border-radius: 4px;
+    animation: ${shimmer} 2s infinite;
+`;
+
+const SkeletonCircle = styled.div<{ width: string; height: string }>`
+    width: ${props => props.width};
+    height: ${props => props.height};
+    border-radius: 50%;
+    background: linear-gradient(
+        90deg,
+        rgba(255, 255, 255, 0.05) 0%,
+        rgba(255, 255, 255, 0.15) 50%,
+        rgba(255, 255, 255, 0.05) 100%
+    );
+    background-size: 1000px 100%;
+    animation: ${shimmer} 2s infinite;
+`;
+
+const SkeletonBar = styled.div<{ height: number }>`
+    width: 100%;
+    height: ${props => props.height}px;
+    background: linear-gradient(
+        90deg,
+        rgba(255, 255, 255, 0.05) 0%,
+        rgba(255, 255, 255, 0.15) 50%,
+        rgba(255, 255, 255, 0.05) 100%
+    );
+    background-size: 1000px 100%;
+    border-radius: 10px;
+    animation: ${shimmer} 2s infinite;
+`;
+
+const LoadingResultCard = styled(ResultCard)`
+    position: relative;
+    overflow: hidden;
+    
+    &::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(
+            90deg,
+            transparent,
+            rgba(255, 255, 255, 0.1),
+            transparent
+        );
+        animation: ${shimmer} 2s infinite;
+    }
+`;
+
+const LoadingChartWrapper = styled(ChartWrapper)`
+    position: relative;
+    overflow: hidden;
+    
+    &::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(
+            90deg,
+            transparent,
+            rgba(255, 255, 255, 0.1),
+            transparent
+        );
+        animation: ${shimmer} 2s infinite;
+    }
+`;
+
+const LoadingChartArticle = styled(ChartArticle)`
+    position: relative;
+    overflow: hidden;
+    
+    &::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(
+            90deg,
+            transparent,
+            rgba(255, 255, 255, 0.1),
+            transparent
+        );
+        animation: ${shimmer} 2s infinite;
+    }
 `;

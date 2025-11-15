@@ -4,9 +4,18 @@ import ZoomWrapper from "@/components/common/ZoomWrapper";
 import useWindowSize from "@/hooks/useWindowSize";
 import { useEffect, useState } from "react";
 import { JobPostingRiskResponse } from "@/lib/types/recruitment";
-import styled from "styled-components";
+import styled, { keyframes, css } from "styled-components";
 import Flex from "@/components/common/Flex";
 import Text from "@/components/common/Text";
+
+const shimmer = keyframes`
+    0% {
+        background-position: -1000px 0;
+    }
+    100% {
+        background-position: 1000px 0;
+    }
+`;
 
 export default function ReportPage() {
     const {width, height} = useWindowSize();
@@ -18,7 +27,56 @@ export default function ReportPage() {
         if (stored) setData(JSON.parse(stored));
     }, []);
 
-    if (!data) return <Flex center><Text color="#fff">분석 결과를 불러오는 중...</Text></Flex>;
+    if (!data) {
+        return (
+            <Container center>
+                <ZoomWrapper width={width} height={height}>
+                    <LoadingReportWrapper center gap={50} row>
+                        <LoadingMainReportWrapper gap={64}>
+                            <LoadingTitleWrapper gap={31}>
+                                <SkeletonText width="400px" height="40px" />
+                                <Flex gap={15}>
+                                    <Flex row gap={12} flexStart>
+                                        <SkeletonText width="100px" height="20px" />
+                                        <Flex gap={8} row center>
+                                            {[...Array(5)].map((_, i) => (
+                                                <SkeletonDot key={i} />
+                                            ))}
+                                        </Flex>
+                                    </Flex>
+                                    <Flex row gap={18} center flexStart>
+                                        <SkeletonText width="120px" height="20px" />
+                                        <Flex row gap={16}>
+                                            {[...Array(6)].map((_, i) => (
+                                                <SkeletonKeywordBox key={i} />
+                                            ))}
+                                        </Flex>
+                                    </Flex>
+                                </Flex>
+                            </LoadingTitleWrapper>
+                            <LoadingResultWrapper gap={50}>
+                                {[...Array(3)].map((_, i) => (
+                                    <Flex key={i} gap={20}>
+                                        <SkeletonText width="200px" height="38px" />
+                                        <SkeletonText width="100%" height="24px" />
+                                        <SkeletonText width="90%" height="24px" />
+                                        <SkeletonText width="85%" height="24px" />
+                                    </Flex>
+                                ))}
+                            </LoadingResultWrapper>
+                        </LoadingMainReportWrapper>
+                        <LoadingSideReportWrapper gap={30}>
+                            <SkeletonText width="120px" height="28px" />
+                            <SkeletonDivider />
+                            <SkeletonText width="100%" height="20px" />
+                            <SkeletonText width="95%" height="20px" />
+                            <SkeletonText width="90%" height="20px" />
+                        </LoadingSideReportWrapper>
+                    </LoadingReportWrapper>
+                </ZoomWrapper>
+            </Container>
+        );
+    }
 
     return (
         <Container center>
@@ -150,4 +208,113 @@ const KeywordBox = styled(Flex)`
     padding: 13.648px 16.377px;
     border-radius: 27.295px;
     background: #252736;
+`;
+
+const SkeletonText = styled.div<{ width: string; height: string }>`
+    width: ${props => props.width};
+    height: ${props => props.height};
+    background: linear-gradient(
+        90deg,
+        rgba(255, 255, 255, 0.05) 0%,
+        rgba(255, 255, 255, 0.15) 50%,
+        rgba(255, 255, 255, 0.05) 100%
+    );
+    background-size: 1000px 100%;
+    border-radius: 4px;
+    animation: ${shimmer} 2s infinite;
+`;
+
+const SkeletonDot = styled.div`
+    width: 12.5px;
+    height: 12.5px;
+    border-radius: 100%;
+    background: linear-gradient(
+        90deg,
+        rgba(255, 255, 255, 0.05) 0%,
+        rgba(255, 255, 255, 0.15) 50%,
+        rgba(255, 255, 255, 0.05) 100%
+    );
+    background-size: 1000px 100%;
+    animation: ${shimmer} 2s infinite;
+`;
+
+const SkeletonKeywordBox = styled.div`
+    height: 32.755px;
+    width: 80px;
+    border-radius: 27.295px;
+    background: linear-gradient(
+        90deg,
+        rgba(255, 255, 255, 0.05) 0%,
+        rgba(255, 255, 255, 0.15) 50%,
+        rgba(255, 255, 255, 0.05) 100%
+    );
+    background-size: 1000px 100%;
+    animation: ${shimmer} 2s infinite;
+`;
+
+const SkeletonDivider = styled.div`
+    width: 319px;
+    height: 1px;
+    background: linear-gradient(
+        90deg,
+        rgba(255, 255, 255, 0.05) 0%,
+        rgba(255, 255, 255, 0.15) 50%,
+        rgba(255, 255, 255, 0.05) 100%
+    );
+    background-size: 1000px 100%;
+    animation: ${shimmer} 2s infinite;
+`;
+
+const LoadingReportWrapper = styled(ReportWrapper)`
+    position: relative;
+`;
+
+const LoadingMainReportWrapper = styled(MainReportWrapper)`
+    position: relative;
+    overflow: hidden;
+    
+    &::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(
+            90deg,
+            transparent,
+            rgba(255, 255, 255, 0.1),
+            transparent
+        );
+        animation: ${shimmer} 2s infinite;
+    }
+`;
+
+const LoadingTitleWrapper = styled(TitleWrapper)`
+    position: relative;
+`;
+
+const LoadingResultWrapper = styled(ResultWrapper)`
+    position: relative;
+`;
+
+const LoadingSideReportWrapper = styled(SideReportWrapper)`
+    position: relative;
+    overflow: hidden;
+    
+    &::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(
+            90deg,
+            transparent,
+            rgba(255, 255, 255, 0.1),
+            transparent
+        );
+        animation: ${shimmer} 2s infinite;
+    }
 `;
