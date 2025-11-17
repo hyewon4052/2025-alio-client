@@ -71,6 +71,11 @@ export default function HomePage() {
                                         type="text"
                                         value={input}
                                         onChange={(e) => setInput(e.target.value)}
+                                        onKeyDown={(e) => {
+                                            if (!mutation.isPending && e.key === "Enter") {
+                                                handleAnalyze();
+                                            }
+                                        }}
                                         placeholder="공고의 url, 텍스트, 스크린샷을 등록해주세요!"
                                     />
                                     <UploadButton onClick={handleAnalyze} disabled={mutation.isPending}>

@@ -204,7 +204,6 @@ const Eclipse = styled.div<{ active: string }>`
 `;
 
 const KeywordBox = styled(Flex)`
-    height: 32.755px;
     padding: 13.648px 16.377px;
     border-radius: 27.295px;
     background: #252736;
