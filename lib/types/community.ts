@@ -7,8 +7,11 @@ export interface CommunityPostSummary {
   rating: number;
   caseType: CommunityCaseType;
   summary: string;
+  isAnonymous: boolean;
+  viewCount: number;
   createdAt: string;
   tags: string[];
+  country?: string;
 }
 
 export interface CommunityPostCard {
@@ -29,8 +32,11 @@ export interface CommunityPostDetail {
   author: string;
   rating: number;
   caseType: CommunityCaseType;
+  isAnonymous: boolean;
+  viewCount: number;
   createdAt: string;
   tags: string[];
+  country?: string;
 }
 
 export interface CaseArchiveItem {
@@ -46,5 +52,7 @@ export interface CommunityPostPayload {
   rating: number;
   tags: string[];
   caseType: CommunityCaseType;
+  isAnonymous?: boolean;
+  country?: string;
 }
 

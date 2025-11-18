@@ -1,57 +1,71 @@
 'use client';
 
-import { FormEvent, KeyboardEvent, useMemo, useState } from 'react';
+import { FormEvent, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import styled from 'styled-components';
+import Flex from '@/components/common/Flex';
+import ZoomWrapper from '@/components/common/ZoomWrapper';
+import useWindowSize from '@/hooks/useWindowSize';
 import { createCommunityPost } from '@/lib/api/community';
 import { CommunityCaseType } from '@/lib/types/community';
 
-const CASE_OPTIONS: { value: CommunityCaseType; label: string; description: string }[] = [
-  { value: 'SUCCESS', label: '성공 사례', description: '긍정적인 경험과 추천 포인트 중심' },
-  { value: 'RISK', label: '위험/피해 사례', description: '사기, 비자 문제, 급여 미지급 등 경고' },
+const PRESET_KEYWORDS = [
+  '치안 안 좋음',
+  '물가 비쌈',
+  '언어 장벽',
+  '비자 문제',
+  '숙소 문제',
+  '문화 차이',
+  '고용 조건',
+  '생활비',
+  '의료 시설',
+  '교통 불편',
+];
+
+const COUNTRIES = [
+  '캄보디아',
+  '일본',
+  '싱가포르',
+  '미국',
+  '영국',
 ];
 
 export default function CommunityCreatePage() {
+  const { width, height } = useWindowSize();
   const router = useRouter();
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
-  const [rating, setRating] = useState(3);
-  const [caseType, setCaseType] = useState<CommunityCaseType>('SUCCESS');
+  const [caseType, setCaseType] = useState<CommunityCaseType>('RISK');
   const [tags, setTags] = useState<string[]>([]);
-  const [tagInput, setTagInput] = useState('');
   const [isAnonymous, setIsAnonymous] = useState(true);
+  const [country, setCountry] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string>();
 
-  const tagPlaceholder = useMemo(() => {
-    if (caseType === 'RISK') {
-      return '예: 비자 문제, 급여 미지급, 문화 충격';
+  const toggleTag = (tag: string) => {
+    if (tags.includes(tag)) {
+      setTags(tags.filter((t) => t !== tag));
+    } else {
+      if (tags.length < 10) {
+        setTags([...tags, tag]);
+      }
     }
-    return '예: 빠른 온보딩, 현지 지원, 추천 포인트';
-  }, [caseType]);
-
-  const handleTagKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
-    if (event.key !== 'Enter' && event.key !== ',') {
-      return;
-    }
-
-    event.preventDefault();
-    const value = tagInput.trim().toLowerCase();
-    if (!value || tags.includes(value)) {
-      setTagInput('');
-      return;
-    }
-    setTags((prev) => [...prev, value]);
-    setTagInput('');
-  };
-
-  const removeTag = (tag: string) => {
-    setTags((prev) => prev.filter((item) => item !== tag));
   };
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (!title.trim() || !content.trim() || tags.length === 0) {
-      setError('필수 항목(제목, 글, 키워드)을 모두 입력해주세요.');
+    if (!title.trim() || !content.trim() || tags.length === 0 || !country) {
+      setError('필수 항목(제목, 글, 키워드, 국가)을 모두 입력해주세요.');
+      return;
+    }
+
+    if (title.length > 20) {
+      setError('제목은 최대 20자까지 입력 가능합니다.');
+      return;
+    }
+
+    if (content.length > 1000) {
+      setError('본문은 최대 1000자까지 입력 가능합니다.');
       return;
     }
 
@@ -61,9 +75,11 @@ export default function CommunityCreatePage() {
       const response = await createCommunityPost({
         title: title.trim(),
         content: content.trim(),
-        rating,
+        rating: 3,
         caseType,
         tags,
+        isAnonymous,
+        country,
       });
       router.replace(`/community/${response.id}`);
     } catch (err) {
@@ -75,199 +91,368 @@ export default function CommunityCreatePage() {
   };
 
   return (
-    <div className="min-h-screen text-slate-100">
-      <div className="mx-auto max-w-4xl px-4 pb-20 pt-16">
-        <button
-          onClick={() => router.back()}
-          className="text-sm text-slate-400 transition hover:text-fuchsia-300"
-        >
-          ← 뒤로가기
-        </button>
-
-        <form
-          onSubmit={handleSubmit}
-          className="glass-card mt-8 space-y-10 rounded-3xl px-8 py-10"
-        >
-          <header className="space-y-3">
-            <p className="text-xs uppercase tracking-[0.4em] text-fuchsia-300/80">Report Case</p>
-            <h1 className="text-3xl font-bold text-white">커뮤니티 경험 공유</h1>
-            <p className="text-sm leading-relaxed text-slate-300">
-              익명 또는 실명을 선택해 실제 경험을 기록해 주세요. 작성된 내용은 AI 요약 및 케이스 아카이브에 반영되어
-              다른 사용자에게 중요한 리스크 시그널을 제공합니다.
-            </p>
-          </header>
-
-          <div className="grid gap-6 md:grid-cols-2">
-            <div className="space-y-3">
-              <label className="text-sm font-semibold text-slate-200">
-                익명 여부 선택 <span className="text-fuchsia-300">*</span>
-              </label>
-              <div className="flex gap-3 rounded-full bg-white/5 p-1">
-                <button
+    <Container>
+      <ZoomWrapper width={width} height={height}>
+        <FormWrapper>
+          <Form onSubmit={handleSubmit}>
+            <Section>
+              <Label>
+                익명 여부 선택 <Required>*</Required>
+              </Label>
+              <ButtonGroup>
+                <ToggleButton
                   type="button"
+                  $active={isAnonymous}
                   onClick={() => setIsAnonymous(true)}
-                  className={`flex-1 rounded-full px-4 py-3 text-sm transition ${
-                    isAnonymous ? 'bg-fuchsia-500 text-white' : 'text-slate-300 hover:bg-white/10'
-                  }`}
                 >
                   익명
-                </button>
-                <button
+                </ToggleButton>
+                <ToggleButton
                   type="button"
+                  $active={!isAnonymous}
                   onClick={() => setIsAnonymous(false)}
-                  className={`flex-1 rounded-full px-4 py-3 text-sm transition ${
-                    !isAnonymous ? 'bg-fuchsia-500 text-white' : 'text-slate-300 hover:bg-white/10'
-                  }`}
                 >
                   실명 공개
-                </button>
-              </div>
-              <p className="text-xs text-slate-400">
-                익명 선택 시, 닉네임이 공개되지 않으며 기본 아바타가 표시됩니다.
-              </p>
-            </div>
+                </ToggleButton>
+              </ButtonGroup>
+            </Section>
 
-            <div className="space-y-3">
-              <label className="text-sm font-semibold text-slate-200">
-                총평 (1~5점) <span className="text-fuchsia-300">*</span>
-              </label>
-              <div className="flex gap-3 rounded-2xl bg-white/5 p-2">
-                {[1, 2, 3, 4, 5].map((value) => (
-                  <button
-                    key={value}
-                    type="button"
-                    onClick={() => setRating(value)}
-                    className={`flex-1 rounded-xl px-3 py-2 text-sm transition ${
-                      rating === value ? 'bg-fuchsia-500 text-white' : 'text-slate-300 hover:bg-white/10'
-                    }`}
-                  >
-                    {value}점
-                  </button>
+            <Section>
+              <Label>
+                국가 선택 <Required>*</Required>
+              </Label>
+              <Select
+                value={country}
+                onChange={(event) => setCountry(event.target.value)}
+              >
+                <option value="">국가를 선택해주세요</option>
+                {COUNTRIES.map((countryOption) => (
+                  <option key={countryOption} value={countryOption}>
+                    {countryOption}
+                  </option>
                 ))}
-              </div>
-              <p className="text-xs text-slate-400">후기 전반에 대한 체감 만족도를 선택해주세요.</p>
-            </div>
-          </div>
+              </Select>
+            </Section>
 
-          <div className="space-y-4">
-            <label className="text-sm font-semibold text-slate-200">
-              케이스 유형 <span className="text-fuchsia-300">*</span>
-            </label>
-            <div className="grid gap-4 md:grid-cols-2">
-              {CASE_OPTIONS.map((option) => (
-                <button
-                  key={option.value}
+            <Section>
+              <LabelRow>
+                <Label>
+                  제목 작성 <Required>*</Required>
+                </Label>
+                <CharLimit>최대 20자</CharLimit>
+              </LabelRow>
+              <Input
+                value={title}
+                onChange={(event) => setTitle(event.target.value)}
+                placeholder="주요 AI 기능 설명을 해주세요. 해당내용은 프롬프트로 이용됩니다."
+                maxLength={20}
+              />
+            </Section>
+
+            <Section>
+              <LabelRow>
+                <Label>
+                  글 작성 <Required>*</Required>
+                </Label>
+                <CharLimit>최대 1000자</CharLimit>
+              </LabelRow>
+              <TextArea
+                value={content}
+                onChange={(event) => setContent(event.target.value)}
+                placeholder="주요 AI 기능 설명을 해주세요. 해당내용은 프롬프트로 이용됩니다."
+                rows={12}
+                maxLength={1000}
+              />
+            </Section>
+
+            <Section>
+              <LabelRow>
+                <Label>
+                  주요 키워드 <Required>*</Required>
+                </Label>
+                <AddKeywordButton
                   type="button"
-                  onClick={() => setCaseType(option.value)}
-                  className={`rounded-2xl border px-5 py-4 text-left transition ${
-                    caseType === option.value
-                      ? 'border-fuchsia-400 bg-fuchsia-500/20 text-white'
-                      : 'border-white/10 bg-white/5 text-slate-200 hover:bg-white/10'
-                  }`}
+                  onClick={() => {
+                    if (tags.length < 10) {
+                      const available = PRESET_KEYWORDS.filter((k) => !tags.includes(k));
+                      if (available.length > 0) {
+                        setTags([...tags, available[0]]);
+                      }
+                    }
+                  }}
                 >
-                  <p className="text-sm font-semibold">{option.label}</p>
-                  <p className="mt-1 text-xs text-slate-300">{option.description}</p>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="space-y-4">
-            <label className="text-sm font-semibold text-slate-200">
-              제목 작성 <span className="text-fuchsia-300">*</span>
-            </label>
-            <input
-              value={title}
-              onChange={(event) => setTitle(event.target.value)}
-              placeholder="주요 AI 기능 설명을 해주세요. 해당 내용은 프롬프트로 이용됩니다."
-              maxLength={120}
-              className="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white outline-none transition focus:border-fuchsia-400 focus:bg-white/10"
-            />
-            <p className="text-right text-xs text-slate-400">{title.length} / 120자</p>
-          </div>
-
-          <div className="space-y-4">
-            <label className="text-sm font-semibold text-slate-200">
-              글 작성 <span className="text-fuchsia-300">*</span>
-            </label>
-            <textarea
-              value={content}
-              onChange={(event) => setContent(event.target.value)}
-              placeholder="주요 AI 기능 설명을 해주세요. 해당 내용은 프롬프트로 이용됩니다."
-              rows={12}
-              maxLength={5000}
-              className="w-full rounded-3xl border border-white/10 bg-white/5 px-5 py-4 text-sm leading-6 text-white outline-none transition focus:border-fuchsia-400 focus:bg-white/10"
-            />
-            <p className="text-right text-xs text-slate-400">{content.length} / 5000자</p>
-          </div>
-
-          <div className="space-y-3">
-            <label className="text-sm font-semibold text-slate-200">
-              주요 키워드 <span className="text-fuchsia-300">*</span>
-            </label>
-            <p className="text-xs text-slate-400">Enter 키 또는 , 로 키워드를 추가하세요. 최대 10개까지 입력 가능합니다.</p>
-            <div className="flex flex-wrap gap-2">
-              {tags.map((tag) => (
-                <span
-                  key={tag}
-                  className="inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 text-xs font-medium text-slate-100"
-                >
-                  #{tag}
-                  <button
+                  <PlusIcon>+</PlusIcon>
+                  키워드 추가
+                </AddKeywordButton>
+              </LabelRow>
+              <KeywordGrid>
+                {PRESET_KEYWORDS.map((keyword) => (
+                  <KeywordButton
+                    key={keyword}
                     type="button"
-                    onClick={() => removeTag(tag)}
-                    className="rounded-full bg-white/10 px-2 py-1 text-[10px] text-slate-300 transition hover:bg-white/20"
+                    $selected={tags.includes(keyword)}
+                    onClick={() => toggleTag(keyword)}
                   >
-                    삭제
-                  </button>
-                </span>
-              ))}
-              <label className="inline-flex items-center gap-2 rounded-full bg-fuchsia-500/20 px-4 py-2 text-xs text-fuchsia-200">
-                <span className="rounded-full bg-fuchsia-500 px-2 py-1 text-[10px] font-semibold text-white">+</span>
-                키워드 추가
-                <input
-                  value={tagInput}
-                  onChange={(event) => setTagInput(event.target.value)}
-                  onKeyDown={handleTagKeyDown}
-                  placeholder={tagPlaceholder}
-                  className="hidden"
-                />
-              </label>
-            </div>
-            <input
-              value={tagInput}
-              onChange={(event) => setTagInput(event.target.value)}
-              onKeyDown={handleTagKeyDown}
-              placeholder={tagPlaceholder}
-              className="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white outline-none transition focus:border-fuchsia-400 focus:bg-white/10"
-            />
-          </div>
+                    {keyword}
+                  </KeywordButton>
+                ))}
+              </KeywordGrid>
+            </Section>
 
-          {error && (
-            <div className="rounded-2xl bg-rose-500/20 px-4 py-3 text-sm text-rose-200">
-              {error}
-            </div>
-          )}
+            {error && (
+              <ErrorBox>
+                {error}
+              </ErrorBox>
+            )}
 
-          <div className="flex items-center justify-end gap-3">
-            <button
-              type="button"
-              onClick={() => router.push('/community')}
-              className="rounded-full border border-white/15 px-6 py-3 text-sm font-semibold text-slate-300 transition hover:bg-white/10"
-            >
-              취소
-            </button>
-            <button
-              type="submit"
-              disabled={loading}
-              className="rounded-full bg-fuchsia-500 px-6 py-3 text-sm font-semibold text-white shadow-lg transition hover:bg-fuchsia-400 disabled:cursor-not-allowed disabled:bg-fuchsia-700/40"
-            >
+            <SubmitButton type="submit" disabled={loading}>
               {loading ? '저장 중...' : '완료'}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
+            </SubmitButton>
+          </Form>
+        </FormWrapper>
+      </ZoomWrapper>
+    </Container>
   );
 }
 
+const Container = styled.div`
+  width: 100%;
+  min-height: 100vh;
+  height: 100vh;
+  background-color: #1D1C25;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 58px 0 100px 0;
+  position: relative;
+  z-index: 0;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+`;
+
+const FormWrapper = styled.div`
+  width: 100%;
+  max-width: 1200px;
+  padding: 0 40px;
+  margin: 0 auto;
+`;
+
+const Form = styled.form`
+  width: 100%;
+  background: #23222e;
+  border: 1px solid #22212d;
+  border-radius: 12px;
+  padding: 56px;
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+`;
+
+const Section = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+`;
+
+const Label = styled.label`
+  font-size: 16px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.8);
+`;
+
+const Required = styled.span`
+  color: #6F00FF;
+`;
+
+const LabelRow = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+`;
+
+const CharLimit = styled.span`
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.4);
+`;
+
+const ButtonGroup = styled.div`
+  display: flex;
+  gap: 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 24px;
+  padding: 4px;
+`;
+
+const ToggleButton = styled.button<{ $active: boolean }>`
+  flex: 1;
+  padding: 16px 20px;
+  border: none;
+  border-radius: 20px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  background-color: ${props => props.$active ? '#272734' : 'transparent'};
+  color: ${props => props.$active ? '#ffffff' : 'rgba(255, 255, 255, 0.6)'};
+
+  &:hover {
+    background-color: ${props => props.$active ? '#272734' : 'rgba(255, 255, 255, 0.05)'};
+  }
+`;
+
+const Select = styled.select`
+  width: 100%;
+  padding: 16px 20px;
+  background-color: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  color: #ffffff;
+  font-size: 16px;
+  outline: none;
+  transition: all 0.2s;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L6 6L11 1' stroke='%23ffffff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 20px center;
+  padding-right: 50px;
+  cursor: pointer;
+
+  option {
+    background-color: #272734;
+    color: #ffffff;
+  }
+
+  &:focus {
+    border-color: #6F00FF;
+    background-color: rgba(255, 255, 255, 0.08);
+  }
+`;
+
+const Input = styled.input`
+  width: 100%;
+  padding: 16px 20px;
+  background-color: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  color: #ffffff;
+  font-size: 16px;
+  outline: none;
+  transition: all 0.2s;
+
+  &::placeholder {
+    color: rgba(255, 255, 255, 0.3);
+  }
+
+  &:focus {
+    border-color: #6F00FF;
+    background-color: rgba(255, 255, 255, 0.08);
+  }
+`;
+
+const TextArea = styled.textarea`
+  width: 100%;
+  padding: 20px;
+  background-color: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  color: #ffffff;
+  font-size: 16px;
+  line-height: 1.6;
+  outline: none;
+  resize: none;
+  transition: all 0.2s;
+
+  &::placeholder {
+    color: rgba(255, 255, 255, 0.3);
+  }
+
+  &:focus {
+    border-color: #6F00FF;
+    background-color: rgba(255, 255, 255, 0.08);
+  }
+`;
+
+const AddKeywordButton = styled.button`
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: rgba(111, 0, 255, 0.2);
+  border: none;
+  border-radius: 20px;
+  font-size: 12px;
+  color: rgba(111, 0, 255, 0.8);
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover {
+    background: rgba(111, 0, 255, 0.3);
+  }
+`;
+
+const PlusIcon = styled.span`
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #6F00FF;
+  color: #ffffff;
+  font-size: 10px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+`;
+
+const KeywordGrid = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+`;
+
+const KeywordButton = styled.button<{ $selected: boolean }>`
+  padding: 12px 20px;
+  border: none;
+  border-radius: 20px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  background-color: ${props => props.$selected ? '#6F00FF' : 'rgba(255, 255, 255, 0.05)'};
+  color: ${props => props.$selected ? '#ffffff' : 'rgba(255, 255, 255, 0.6)'};
+
+  &:hover {
+    background-color: ${props => props.$selected ? '#6F00FF' : 'rgba(255, 255, 255, 0.1)'};
+  }
+`;
+
+const ErrorBox = styled.div`
+  padding: 12px 16px;
+  background: rgba(239, 68, 68, 0.2);
+  border-radius: 8px;
+  color: #fca5a5;
+  font-size: 14px;
+`;
+
+const SubmitButton = styled.button`
+  width: 100%;
+  max-width: 280px;
+  margin: 0 auto;
+  padding: 20px 40px;
+  background: #272734;
+  border: none;
+  border-radius: 24px;
+  color: #ffffff;
+  font-size: 17px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover:not(:disabled) {
+    background: #2d2d3a;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+`;
