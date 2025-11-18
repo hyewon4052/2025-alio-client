@@ -13,6 +13,7 @@ export default function Navbar() {
     const isAuthPage = pathname === '/login' || pathname === '/signup';
     const isHomeActive = !isAuthPage && (pathname === '/' || pathname === '/home');
     const isNewsActive = !isAuthPage && pathname === '/news';
+    const isCommunityActive = !isAuthPage && pathname === '/community';
 
     return (
         <NavbarContainer>
@@ -29,16 +30,14 @@ export default function Navbar() {
                             Home
                         </Text>
                     </NavItem>
-                    <NavItem $active={false} onClick={() => router.push("/community")}>
-                        <NavLink href="#">
-                            <Text color="#FFFFFF" fontSize={15} fontWeight={700} >
-                                커뮤니티
-                            </Text>
-                        </NavLink>
+                    <NavItem $active={isCommunityActive} onClick={() => router.push("/community")}>
+                        <Text color={isCommunityActive ? "#000000" : "#FFFFFF"} fontSize={15} fontWeight={700}>
+                            Community
+                        </Text>
                     </NavItem>
                     <NavItem $active={isNewsActive} onClick={() => router.push("/news")}>
                         <Text color={isNewsActive ? "#000000" : "#FFFFFF"} fontSize={15} fontWeight={700}>
-                            뉴스
+                            News
                         </Text>
                     </NavItem>
                 </NavMenu>

@@ -47,6 +47,9 @@ export default function UserAside() {
             console.error('Failed to create comment', error);
             if (error?.response?.status === 401) {
                 router.push('/login');
+            } else if (error?.response?.status === 405) {
+                console.error('API endpoint does not support POST method. Please check the endpoint path.');
+                alert('댓글 작성 기능이 현재 사용할 수 없습니다. 잠시 후 다시 시도해주세요.');
             }
         } finally {
             setSubmitting(false);
